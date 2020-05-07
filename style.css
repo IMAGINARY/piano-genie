@@ -8,7 +8,7 @@ body {
   background: #141E30;
   background: linear-gradient(to bottom, #243B55, #141E30);
   color: white;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -31,18 +31,18 @@ body {
 
 .background {
   width: 100vw;
-  height: 100vh; 
+  height: 100vh;
   background: #141E30;
   background: linear-gradient(to bottom, #243B55, #141E30);
 }
 
-.color-0 { background: #EE2B29; fill: #EE2B29; } 
-.color-1 { background: #ff9800; fill: #ff9800; } 
-.color-2 { background: #ffff00; fill: #ffff00; } 
-.color-3 { background: #c6ff00; fill: #c6ff00; } 
-.color-4 { background: #00e5ff; fill: #00e5ff; } 
-.color-5 { background: #2979ff; fill: #2979ff; } 
-.color-6 { background: #651fff; fill: #651fff; } 
+.color-0 { background: #EE2B29; fill: #EE2B29; }
+.color-1 { background: #ff9800; fill: #ff9800; }
+.color-2 { background: #ffff00; fill: #ffff00; }
+.color-3 { background: #c6ff00; fill: #c6ff00; }
+.color-4 { background: #00e5ff; fill: #00e5ff; }
+.color-5 { background: #2979ff; fill: #2979ff; }
+.color-6 { background: #651fff; fill: #651fff; }
 .color-7 { background: #d500f9; fill: #d500f9; }
 
 canvas {
@@ -148,8 +148,8 @@ h1 {
   .controls {
     height: 70px;
     width: 100vw;
-  } 
-  
+  }
+
   canvas {
     top: 70px;
   }
@@ -162,7 +162,7 @@ h1 {
     justify-content: space-between;
     height: 100vh;
   } */
-  
+
   .rotate-phone {
     display: block;
   }
@@ -207,7 +207,7 @@ button.splash-button.small {
 .splash-button.loading span {
   animation: pulsing-fade 1.2s ease-in-out infinite;
 }
-@keyframes pulsing-fade { 
+@keyframes pulsing-fade {
   50% { opacity: 0.3; }
 }
 
