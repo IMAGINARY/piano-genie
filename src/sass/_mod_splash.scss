@@ -1,0 +1,64 @@
+.splash a:link, a:visited {
+    color: #CDF352;
+}
+
+.splash-main b {
+    background: #CDF352;
+    color: black;
+    padding: 0 4px;
+}
+
+@keyframes rotate {
+    0%, 10% { transform: rotate(0deg) }
+    40%, 60% { transform: rotate(-90deg) }
+    95%, 100% { transform: rotate(0deg) }
+}
+
+@media screen and (max-width: 500px) {
+    .rotate-phone {
+        display: block;
+    }
+}
+
+.splash {
+    font-size: 16px;
+    padding: 20px;
+    line-height: 1.5;
+    width: 100%;
+    max-width: 700px;
+    overflow: auto;
+}
+
+button.splash-button {
+    cursor: pointer;
+    margin: 40px auto;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 22px;
+    display: block;
+    border: 2px solid #CDF352;
+    background-color: transparent;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #CDF352;
+    text-align: center;
+    transition: background-color 0.2s linear;
+    width: 200px;
+}
+
+button.splash-button:hover {
+    background-color: #CDF352;
+    color: black;
+}
+
+button.splash-button.small {
+    padding: 8px;
+    font-size: 16px;
+}
+
+.splash-button.loading span {
+    animation: pulsing-fade 1.2s ease-in-out infinite;
+}
+@keyframes pulsing-fade {
+    50% { opacity: 0.3; }
+}

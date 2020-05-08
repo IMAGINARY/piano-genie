@@ -1,0 +1,36 @@
+/***********************
+ * Radio buttons
+ ***********************/
+.control-indicator {
+  border: solid #CDF352 2px;
+  color: #CDF352;
+  border-radius: 2px;
+}
+label.radio {
+  position: relative;
+  display: inline-block;
+  padding-left: 24px;
+  margin-right: 24px;
+  cursor: pointer;
+}
+label.radio > input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  z-index: -1;
+}
+label.radio >  input:checked ~ .control-indicator {
+  background-color: #CDF352;
+}
+label.radio > .control-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#inputNumButtons { vertical-align: middle; }

@@ -1,0 +1,64 @@
+<div class="dialog" id="settingsBox" hidden>
+  <h2>Game Controls</h2>
+  <p>
+    Number of buttons:
+    <label class="radio">
+      <input name="num" type="radio" id="numButtons4">
+      <span class="control-indicator"></span>
+      4
+    </label>
+    <label class="radio">
+      <input name="num" type="radio" id="numButtons8" checked>
+      <span class="control-indicator"></span>
+      8
+    </label>
+  </p>
+  <h2>Input Settings</h2>
+  <p>
+    <label class="radio">
+      Current device (computer/phone)
+      <input name="input" type="radio" id="radioDeviceYes" checked>
+      <span class="control-indicator"></span>
+    </label>
+    <br>
+    <label class="radio">
+      Makey Makey
+      <input name="input" type="radio" id="radioMakeyYes">
+      <span class="control-indicator"></span>
+    </label>
+    <br>
+    <label class="radio">
+      MIDI Input
+      <input name="input" type="radio" id="radioMidiInYes">
+      <span class="control-indicator"></span>
+    </label>
+    <span id="midiInBox" hidden>
+      <select id="selectIn"></select>
+    </span>
+  </p>
+
+  <h2>Audio Output Settings</h2>
+  <p>
+    <label class="radio">
+      Current device (computer/phone)
+      <input name="output" type="radio" id="radioAudioYes" checked>
+      <span class="control-indicator"></span>
+    </label>
+    <br>
+    <label class="radio">
+      MIDI Output
+      <input name="output" type="radio" id="radioMidiOutYes">
+      <span class="control-indicator"></span>
+    </label>
+    <span id="midiOutBox" hidden>
+      <select id="selectOut"></select>
+    </span>
+  </p>
+
+  <p id="midiNotSupported">
+    Unfortunately, this browser does not support WebMIDI, which is only
+    supported in Chrome and Opera.
+  </p>
+
+  <button class="splash-button small" onclick="settingsBox.hidden = !settingsBox.hidden">Close</button>
+</div>

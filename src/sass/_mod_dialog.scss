@@ -1,0 +1,30 @@
+.dialog {
+  font-weight: 100;
+  background: #1C2C42;
+  color: white;
+  padding: 24px;
+  z-index: 10;
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  width: 80%;
+  max-width: 500px;
+  transform: translateX(-50%);
+  border: 2px solid #CDF352;
+  -webkit-box-shadow: 8px 8px 0 #CDF352;
+  box-shadow: 8px 8px 0 #CDF352;
+  text-align: left;
+}
+
+.dialog select {
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  border: none;
+  border-bottom: 2px solid #CDF352;
+  background: transparent;
+  box-shadow: none;
+  margin-bottom: 6px;
+  width: 200px;
+  height: 25px;
+}
