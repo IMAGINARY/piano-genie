@@ -10,6 +10,14 @@ sustain pedal.
 
 The more you pretend you're a real player, the better the melody (and you!) will sound.
 
+## Configuration
+
+The app can be configured through the config.json file in its root directory.
+
+Keys supported are:
+
+- **defaultLanguage** (string): Default language, indicated as an ISO two letter code.
+
 ## Compilation
 
 This app is built using several compilable languages:

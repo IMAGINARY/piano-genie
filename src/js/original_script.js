@@ -1,611 +1,619 @@
-const CONSTANTS = {
-  COLORS : ['#EE2B29','#ff9800','#ffff00','#c6ff00','#00e5ff','#2979ff','#651fff','#d500f9'],
-  NUM_BUTTONS : 8,
-  NOTES_PER_OCTAVE : 12,
-  WHITE_NOTES_PER_OCTAVE : 7,
-  LOWEST_PIANO_KEY_MIDI_NOTE : 21,
-  GENIE_CHECKPOINT : 'model/genie',
-}
+export function initPianoGenie() {
 
-/*************************
- * MIDI or Magenta player
- ************************/
-class Player {
-  constructor() {
-    this.player = new mm.SoundFontPlayer('vendor/sgm_plus');
-    this.midiOut = [];
-    this.midiIn = []
-    this.usingMidiOut = false;
-    this.usingMidiIn = false;
-    this.selectOutElement = document.getElementById('selectOut');
-    this.selectInElement = document.getElementById('selectIn');
-    this.loadAllSamples();
+  const CONSTANTS = {
+    COLORS : ['#EE2B29','#ff9800','#ffff00','#c6ff00','#00e5ff','#2979ff','#651fff','#d500f9'],
+    NUM_BUTTONS : 8,
+    NOTES_PER_OCTAVE : 12,
+    WHITE_NOTES_PER_OCTAVE : 7,
+    LOWEST_PIANO_KEY_MIDI_NOTE : 21,
+    GENIE_CHECKPOINT : 'model/genie',
   }
 
-  loadAllSamples() {
-    const seq = {notes:[]};
-    for (let i = 0; i < CONSTANTS.NOTES_PER_OCTAVE * OCTAVES; i++) {
-      seq.notes.push({pitch: CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + i});
-    }
-    this.player.loadSamples(seq);
-  }
-
-  playNoteDown(pitch, button) {
-    // Send to MIDI out or play with the Magenta player.
-    if (this.usingMidiOut) {
-      this.sendMidiNoteOn(pitch, button);
-    } else {
-      mm.Player.tone.context.resume();
-      this.player.playNoteDown({pitch:pitch});
-    }
-  }
-
-  playNoteUp(pitch, button) {
-    // Send to MIDI out or play with the Magenta player.
-    if (this.usingMidiOut) {
-      this.sendMidiNoteOff(pitch, button);
-    } else {
-      this.player.playNoteUp({pitch:pitch});
-    }
-  }
-
-  // MIDI bits.
-  midiReady(midi) {
-    // Also react to device changes.
-    midi.addEventListener('statechange', (event) => this.initDevices(event.target));
-    this.initDevices(midi);
-  }
-
-  initDevices(midi) {
-    this.midiOut = [];
-    this.midiIn = [];
-
-
-    const outputs = midi.outputs.values();
-    for (let output = outputs.next(); output && !output.done; output = outputs.next()) {
-      this.midiOut.push(output.value);
+  /*************************
+   * MIDI or Magenta player
+   ************************/
+  class Player {
+    constructor() {
+      this.player = new mm.SoundFontPlayer('vendor/sgm_plus');
+      this.midiOut = [];
+      this.midiIn = []
+      this.usingMidiOut = false;
+      this.usingMidiIn = false;
+      this.selectOutElement = document.getElementById('selectOut');
+      this.selectInElement = document.getElementById('selectIn');
+      this.loadAllSamples();
     }
 
-    const inputs = midi.inputs.values();
-    for (let input = inputs.next(); input && !input.done; input = inputs.next()) {
-      this.midiIn.push(input.value);
-      // TODO: should probably use the selected index from this.selectInElement for correctness
-      // but i'm hacking this together for a demo so...
-      input.value.onmidimessage = (msg) => this.getMIDIMessage(msg);
-
+    loadAllSamples() {
+      const seq = {notes:[]};
+      for (let i = 0; i < CONSTANTS.NOTES_PER_OCTAVE * OCTAVES; i++) {
+        seq.notes.push({pitch: CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + i});
+      }
+      this.player.loadSamples(seq);
     }
 
-    // No MIDI, no settings.
-    //btnSettings.hidden = (this.midiOut.length === 0 && this.midiIn.length === 0);
-    this.selectInElement.innerHTML = this.midiIn.map(device => `<option>${device.name}</option>`).join('');
-    this.selectOutElement.innerHTML = this.midiOut.map(device => `<option>${device.name}</option>`).join('');
-  }
-
-  sendMidiNoteOn(pitch, button) {
-    // -1 is sent when releasing the sustain pedal.
-    if (button === -1) button = 0;
-    //const msg = [0x90 + button, pitch, 0x7f];    // note on, full velocity.
-    const msg = [0x90, pitch, 0x7f];    // note on, full velocity.
-    this.midiOut[this.selectOutElement.selectedIndex].send(msg);
-  }
-
-  sendMidiNoteOff(pitch, button) {
-    // -1 is sent when releasing the sustain pedal.
-    if (button === -1) button = 0;
-    //const msg = [0x80 + button, pitch, 0x7f];    // note on, middle C, full velocity.
-    const msg = [0x80, pitch, 0x7f];    // note on, middle C, full velocity.
-    this.midiOut[this.selectOutElement.selectedIndex].send(msg);
-  }
-
-  getMIDIMessage(msg) {
-    if (!this.usingMidiIn) {
-      return;
-    }
-    const command = msg.data[0];
-    const button = msg.data[1];
-    const velocity = (msg.data.length > 2) ? msg.data[2] : 0; // a velocity value might not be included with a noteOff command
-
-    switch (command) {
-      case 0x90: // note on
-        buttonDown(button, false);
-        break;
-      case 0x80: // note off
-        buttonUp(button);
-        break;
-    }
-  }
-}
-
-/*************************
- * Floaty notes
- ************************/
-class FloatyNotes {
-  constructor() {
-    this.notes = [];  // the notes floating on the screen.
-
-    this.canvas = document.getElementById('canvas')
-    this.context = this.canvas.getContext('2d');
-    this.context.lineWidth = 4;
-    this.context.lineCap = 'round';
-
-    this.contextHeight = 0;
-  }
-
-  resize(whiteNoteHeight) {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = this.contextHeight = window.innerHeight - whiteNoteHeight - 20;
-  }
-
-  addNote(button, x, width) {
-    const noteToPaint = {
-      x: parseFloat(x),
-      y: 0,
-      width: parseFloat(width),
-      height: 0,
-      color: CONSTANTS.COLORS[button],
-      on: true
-    };
-    this.notes.push(noteToPaint);
-    return noteToPaint;
-  }
-
-  stopNote(noteToPaint) {
-    noteToPaint.on = false;
-  }
-
-  drawLoop() {
-    const dy = 3;
-    this.context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-    // Remove all the notes that will be off the page;
-    this.notes = this.notes.filter((note) => note.on || note.y < (this.contextHeight - 100));
-
-    // Advance all the notes.
-    for (let i = 0; i < this.notes.length; i++) {
-      const note = this.notes[i];
-
-      // If the note is still on, then its height goes up but it
-      // doesn't start sliding down yet.
-      if (note.on) {
-        note.height += dy;
+    playNoteDown(pitch, button) {
+      // Send to MIDI out or play with the Magenta player.
+      if (this.usingMidiOut) {
+        this.sendMidiNoteOn(pitch, button);
       } else {
-        note.y += dy;
-      }
-
-      this.context.globalAlpha = 1 - note.y / this.contextHeight;
-      this.context.fillStyle = note.color;
-      this.context.fillRect(note.x, note.y, note.width, note.height);
-    }
-    window.requestAnimationFrame(() => this.drawLoop());
-  }
-}
-
-class Piano {
-  constructor() {
-    this.config = {
-      whiteNoteWidth: 20,
-      blackNoteWidth: 20,
-      whiteNoteHeight: 70,
-      blackNoteHeight: 2 * 70 / 3
-    }
-
-    this.svg = document.getElementById('svg');
-    this.svgNS = 'http://www.w3.org/2000/svg';
-  }
-
-  resize(totalWhiteNotes) {
-    // i honestly don't know why some flooring is good and some is bad sigh.
-    const ratio = window.innerWidth / totalWhiteNotes;
-    this.config.whiteNoteWidth = OCTAVES > 6 ? ratio: Math.floor(ratio);
-    this.config.blackNoteWidth = this.config.whiteNoteWidth * 2 / 3;
-    this.svg.setAttribute('width', window.innerWidth);
-    this.svg.setAttribute('height', this.config.whiteNoteHeight);
-  }
-
-  draw() {
-    this.svg.innerHTML = '';
-    const halfABlackNote = this.config.blackNoteWidth / 2;
-    let x = 0;
-    let y = 0;
-    let index = 0;
-
-    const blackNoteIndexes = [1, 3, 6, 8, 10];
-
-    // First draw all the white notes.
-    // Pianos start on an A (if we're using all the octaves);
-    if (OCTAVES > 6) {
-      this.makeRect(0, x, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
-      this.makeRect(2, this.config.whiteNoteWidth, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
-      index = 3;
-      x = 2 * this.config.whiteNoteWidth;
-    } else {
-      // Starting 3 semitones up on small screens (on a C), and a whole octave up.
-      index = 3 + CONSTANTS.NOTES_PER_OCTAVE;
-    }
-
-    // Draw the white notes.
-    for (let o = 0; o < OCTAVES; o++) {
-      for (let i = 0; i < CONSTANTS.NOTES_PER_OCTAVE; i++) {
-        if (blackNoteIndexes.indexOf(i) === -1) {
-          this.makeRect(index, x, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
-          x += this.config.whiteNoteWidth;
-        }
-        index++;
+        mm.Player.tone.context.resume();
+        this.player.playNoteDown({pitch:pitch});
       }
     }
 
-    if (OCTAVES > 6) {
-      // And an extra C at the end (if we're using all the octaves);
-      this.makeRect(index, x, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
-
-      // Now draw all the black notes, so that they sit on top.
-      // Pianos start on an A:
-      this.makeRect(1, this.config.whiteNoteWidth - halfABlackNote, y, this.config.blackNoteWidth, this.config.blackNoteHeight, 'black');
-      index = 3;
-      x = this.config.whiteNoteWidth;
-    } else {
-      // Starting 3 semitones up on small screens (on a C), and a whole octave up.
-      index = 3 + CONSTANTS.NOTES_PER_OCTAVE;
-      x = -this.config.whiteNoteWidth;
+    playNoteUp(pitch, button) {
+      // Send to MIDI out or play with the Magenta player.
+      if (this.usingMidiOut) {
+        this.sendMidiNoteOff(pitch, button);
+      } else {
+        this.player.playNoteUp({pitch:pitch});
+      }
     }
 
-    // Draw the black notes.
-    for (let o = 0; o < OCTAVES; o++) {
-      for (let i = 0; i < CONSTANTS.NOTES_PER_OCTAVE; i++) {
-        if (blackNoteIndexes.indexOf(i) !== -1) {
-          this.makeRect(index, x + this.config.whiteNoteWidth - halfABlackNote, y, this.config.blackNoteWidth, this.config.blackNoteHeight, 'black');
+    // MIDI bits.
+    midiReady(midi) {
+      // Also react to device changes.
+      midi.addEventListener('statechange', (event) => this.initDevices(event.target));
+      this.initDevices(midi);
+    }
+
+    initDevices(midi) {
+      this.midiOut = [];
+      this.midiIn = [];
+
+
+      const outputs = midi.outputs.values();
+      for (let output = outputs.next(); output && !output.done; output = outputs.next()) {
+        this.midiOut.push(output.value);
+      }
+
+      const inputs = midi.inputs.values();
+      for (let input = inputs.next(); input && !input.done; input = inputs.next()) {
+        this.midiIn.push(input.value);
+        // TODO: should probably use the selected index from this.selectInElement for correctness
+        // but i'm hacking this together for a demo so...
+        input.value.onmidimessage = (msg) => this.getMIDIMessage(msg);
+
+      }
+
+      // No MIDI, no settings.
+      //btnSettings.hidden = (this.midiOut.length === 0 && this.midiIn.length === 0);
+      this.selectInElement.innerHTML = this.midiIn.map(device => `<option>${device.name}</option>`).join('');
+      this.selectOutElement.innerHTML = this.midiOut.map(device => `<option>${device.name}</option>`).join('');
+    }
+
+    sendMidiNoteOn(pitch, button) {
+      // -1 is sent when releasing the sustain pedal.
+      if (button === -1) button = 0;
+      //const msg = [0x90 + button, pitch, 0x7f];    // note on, full velocity.
+      const msg = [0x90, pitch, 0x7f];    // note on, full velocity.
+      this.midiOut[this.selectOutElement.selectedIndex].send(msg);
+    }
+
+    sendMidiNoteOff(pitch, button) {
+      // -1 is sent when releasing the sustain pedal.
+      if (button === -1) button = 0;
+      //const msg = [0x80 + button, pitch, 0x7f];    // note on, middle C, full velocity.
+      const msg = [0x80, pitch, 0x7f];    // note on, middle C, full velocity.
+      this.midiOut[this.selectOutElement.selectedIndex].send(msg);
+    }
+
+    getMIDIMessage(msg) {
+      if (!this.usingMidiIn) {
+        return;
+      }
+      const command = msg.data[0];
+      const button = msg.data[1];
+      const velocity = (msg.data.length > 2) ? msg.data[2] : 0; // a velocity value might not be included with a noteOff command
+
+      switch (command) {
+        case 0x90: // note on
+          buttonDown(button, false);
+          break;
+        case 0x80: // note off
+          buttonUp(button);
+          break;
+      }
+    }
+  }
+
+  /*************************
+   * Floaty notes
+   ************************/
+  class FloatyNotes {
+    constructor() {
+      this.notes = [];  // the notes floating on the screen.
+
+      this.canvas = document.getElementById('canvas')
+      this.context = this.canvas.getContext('2d');
+      this.context.lineWidth = 4;
+      this.context.lineCap = 'round';
+
+      this.contextHeight = 0;
+    }
+
+    resize(whiteNoteHeight) {
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = this.contextHeight = window.innerHeight - whiteNoteHeight - 20;
+    }
+
+    addNote(button, x, width) {
+      const noteToPaint = {
+        x: parseFloat(x),
+        y: 0,
+        width: parseFloat(width),
+        height: 0,
+        color: CONSTANTS.COLORS[button],
+        on: true
+      };
+      this.notes.push(noteToPaint);
+      return noteToPaint;
+    }
+
+    stopNote(noteToPaint) {
+      noteToPaint.on = false;
+    }
+
+    drawLoop() {
+      const dy = 3;
+      this.context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Remove all the notes that will be off the page;
+      this.notes = this.notes.filter((note) => note.on || note.y < (this.contextHeight - 100));
+
+      // Advance all the notes.
+      for (let i = 0; i < this.notes.length; i++) {
+        const note = this.notes[i];
+
+        // If the note is still on, then its height goes up but it
+        // doesn't start sliding down yet.
+        if (note.on) {
+          note.height += dy;
         } else {
-          x += this.config.whiteNoteWidth;
+          note.y += dy;
         }
-        index++;
+
+        this.context.globalAlpha = 1 - note.y / this.contextHeight;
+        this.context.fillStyle = note.color;
+        this.context.fillRect(note.x, note.y, note.width, note.height);
+      }
+      window.requestAnimationFrame(() => this.drawLoop());
+    }
+  }
+
+  class Piano {
+    constructor() {
+      this.config = {
+        whiteNoteWidth: 20,
+        blackNoteWidth: 20,
+        whiteNoteHeight: 70,
+        blackNoteHeight: 2 * 70 / 3
+      }
+
+      this.svg = document.getElementById('svg');
+      this.svgNS = 'http://www.w3.org/2000/svg';
+    }
+
+    resize(totalWhiteNotes) {
+      // i honestly don't know why some flooring is good and some is bad sigh.
+      const ratio = window.innerWidth / totalWhiteNotes;
+      this.config.whiteNoteWidth = OCTAVES > 6 ? ratio: Math.floor(ratio);
+      this.config.blackNoteWidth = this.config.whiteNoteWidth * 2 / 3;
+      this.svg.setAttribute('width', window.innerWidth);
+      this.svg.setAttribute('height', this.config.whiteNoteHeight);
+    }
+
+    draw() {
+      this.svg.innerHTML = '';
+      const halfABlackNote = this.config.blackNoteWidth / 2;
+      let x = 0;
+      let y = 0;
+      let index = 0;
+
+      const blackNoteIndexes = [1, 3, 6, 8, 10];
+
+      // First draw all the white notes.
+      // Pianos start on an A (if we're using all the octaves);
+      if (OCTAVES > 6) {
+        this.makeRect(0, x, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
+        this.makeRect(2, this.config.whiteNoteWidth, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
+        index = 3;
+        x = 2 * this.config.whiteNoteWidth;
+      } else {
+        // Starting 3 semitones up on small screens (on a C), and a whole octave up.
+        index = 3 + CONSTANTS.NOTES_PER_OCTAVE;
+      }
+
+      // Draw the white notes.
+      for (let o = 0; o < OCTAVES; o++) {
+        for (let i = 0; i < CONSTANTS.NOTES_PER_OCTAVE; i++) {
+          if (blackNoteIndexes.indexOf(i) === -1) {
+            this.makeRect(index, x, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
+            x += this.config.whiteNoteWidth;
+          }
+          index++;
+        }
+      }
+
+      if (OCTAVES > 6) {
+        // And an extra C at the end (if we're using all the octaves);
+        this.makeRect(index, x, y, this.config.whiteNoteWidth, this.config.whiteNoteHeight, 'white', '#141E30');
+
+        // Now draw all the black notes, so that they sit on top.
+        // Pianos start on an A:
+        this.makeRect(1, this.config.whiteNoteWidth - halfABlackNote, y, this.config.blackNoteWidth, this.config.blackNoteHeight, 'black');
+        index = 3;
+        x = this.config.whiteNoteWidth;
+      } else {
+        // Starting 3 semitones up on small screens (on a C), and a whole octave up.
+        index = 3 + CONSTANTS.NOTES_PER_OCTAVE;
+        x = -this.config.whiteNoteWidth;
+      }
+
+      // Draw the black notes.
+      for (let o = 0; o < OCTAVES; o++) {
+        for (let i = 0; i < CONSTANTS.NOTES_PER_OCTAVE; i++) {
+          if (blackNoteIndexes.indexOf(i) !== -1) {
+            this.makeRect(index, x + this.config.whiteNoteWidth - halfABlackNote, y, this.config.blackNoteWidth, this.config.blackNoteHeight, 'black');
+          } else {
+            x += this.config.whiteNoteWidth;
+          }
+          index++;
+        }
       }
     }
-  }
 
-  highlightNote(note, button) {
-    // Show the note on the piano roll.
-    const rect = this.svg.querySelector(`rect[data-index="${note}"]`);
-    if (!rect) {
-      console.log('couldnt find a rect for note', note);
-      return;
+    highlightNote(note, button) {
+      // Show the note on the piano roll.
+      const rect = this.svg.querySelector(`rect[data-index="${note}"]`);
+      if (!rect) {
+        console.log('couldnt find a rect for note', note);
+        return;
+      }
+      rect.setAttribute('active', true);
+      rect.setAttribute('class', `color-${button}`);
+      return rect;
     }
-    rect.setAttribute('active', true);
-    rect.setAttribute('class', `color-${button}`);
-    return rect;
-  }
 
-  clearNote(rect) {
-    rect.removeAttribute('active');
-    rect.removeAttribute('class');
-  }
-
-  makeRect(index, x, y, w, h, fill, stroke) {
-    const rect = document.createElementNS(this.svgNS, 'rect');
-    rect.setAttribute('data-index', index);
-    rect.setAttribute('x', x);
-    rect.setAttribute('y', y);
-    rect.setAttribute('width', w);
-    rect.setAttribute('height', h);
-    rect.setAttribute('fill', fill);
-    if (stroke) {
-      rect.setAttribute('stroke', stroke);
-      rect.setAttribute('stroke-width', '3px');
+    clearNote(rect) {
+      rect.removeAttribute('active');
+      rect.removeAttribute('class');
     }
-    this.svg.appendChild(rect);
-    return rect;
-  }
-}
 
-/*************************
- * Consts for everyone!
- ************************/
+    makeRect(index, x, y, w, h, fill, stroke) {
+      const rect = document.createElementNS(this.svgNS, 'rect');
+      rect.setAttribute('data-index', index);
+      rect.setAttribute('x', x);
+      rect.setAttribute('y', y);
+      rect.setAttribute('width', w);
+      rect.setAttribute('height', h);
+      rect.setAttribute('fill', fill);
+      if (stroke) {
+        rect.setAttribute('stroke', stroke);
+        rect.setAttribute('stroke-width', '3px');
+      }
+      this.svg.appendChild(rect);
+      return rect;
+    }
+  }
+
+  /*************************
+   * Consts for everyone!
+   ************************/
 // button mappings.
-const MAPPING_8 = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7};
-const MAPPING_4 = {0:0, 1:2, 2:5, 3:7};
-const BUTTONS_DEVICE = ['a','s','d','f','j','k','l',';'];
-const BUTTONS_MAKEY = ['ArrowUp','ArrowLeft','ArrowDown','ArrowRight','w','a','s','d'];
-const BUTTONS_MAKEY_DISPLAY = ['↑','←','↓','→','w','a','s','d'];
+  const MAPPING_8 = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7};
+  const MAPPING_4 = {0:0, 1:2, 2:5, 3:7};
+  const BUTTONS_DEVICE = ['a','s','d','f','j','k','l',';'];
+  const BUTTONS_MAKEY = ['ArrowUp','ArrowLeft','ArrowDown','ArrowRight','w','a','s','d'];
+  const BUTTONS_MAKEY_DISPLAY = ['↑','←','↓','→','w','a','s','d'];
 
-let OCTAVES = 7;
-let NUM_BUTTONS = 8;
-let BUTTON_MAPPING = MAPPING_8;
+  let OCTAVES = 7;
+  let NUM_BUTTONS = 8;
+  let BUTTON_MAPPING = MAPPING_8;
 
-let keyWhitelist;
-let TEMPERATURE = getTemperature();
+  let keyWhitelist;
+  let TEMPERATURE = getTemperature();
 
-const heldButtonToVisualData = new Map();
+  const heldButtonToVisualData = new Map();
 
 // Which notes the pedal is sustaining.
-let sustaining = false
-let sustainingNotes = [];
+  let sustaining = false
+  let sustainingNotes = [];
 
 // Mousedown/up events are weird because you can mouse down in one element and mouse up
 // in another, so you're going to lose that original element and never mouse it up.
-let mouseDownButton = null;
+  let mouseDownButton = null;
 
-const player = new Player();
-const genie = new mm.PianoGenie(CONSTANTS.GENIE_CHECKPOINT);
-const painter = new FloatyNotes();
-const piano = new Piano();
-let isUsingMakey = false;
-initEverything();
+  const player = new Player();
+  const genie = new mm.PianoGenie(CONSTANTS.GENIE_CHECKPOINT);
+  const painter = new FloatyNotes();
+  const piano = new Piano();
+  let isUsingMakey = false;
+  initEverything();
 
-/*************************
- * Basic UI bits
- ************************/
-function initEverything() {
-  genie.initialize().then(() => {
-    console.log('🧞‍♀️ ready!');
-    playBtn.textContent = 'Play';
-    playBtn.removeAttribute('disabled');
-    playBtn.classList.remove('loading');
-  });
+  /*************************
+   * Basic UI bits
+   ************************/
+  function initEverything() {
+    genie.initialize().then(() => {
+      console.log('🧞‍♀️ ready!');
+      playBtn.textContent = 'Play';
+      playBtn.removeAttribute('disabled');
+      playBtn.classList.remove('loading');
+    });
 
-  // Start the drawing loop.
-  onWindowResize();
-  updateButtonText();
-  window.requestAnimationFrame(() => painter.drawLoop());
+    // Start the drawing loop.
+    onWindowResize();
+    updateButtonText();
+    window.requestAnimationFrame(() => painter.drawLoop());
 
-  // Event listeners.
-  document.getElementById('numButtons4').addEventListener('change', (event) => event.target.checked && updateNumButtons(4));
-  document.getElementById('numButtons8').addEventListener('change', (event) => event.target.checked && updateNumButtons(8));
+    // Event listeners.
+    document.getElementById('numButtons4').addEventListener('change', (event) => event.target.checked && updateNumButtons(4));
+    document.getElementById('numButtons8').addEventListener('change', (event) => event.target.checked && updateNumButtons(8));
 
-  window.addEventListener('resize', onWindowResize);
-  window.addEventListener('orientationchange', onWindowResize);
-  window.addEventListener('hashchange', () => TEMPERATURE = getTemperature());
-}
-
-function updateNumButtons(num) {
-  NUM_BUTTONS = num;
-  const buttons = document.querySelectorAll('.controls > button.color');
-  BUTTON_MAPPING = (num === 4) ? MAPPING_4 : MAPPING_8;
-
-  // Hide the extra buttons.
-  for (let i = 0; i < buttons.length; i++) {
-    buttons[i].hidden = i >= num;
-  }
-}
-
-export function showMainScreen() {
-  document.querySelector('.splash').hidden = true;
-  document.querySelector('.loaded').hidden = false;
-
-  document.addEventListener('keydown',onKeyDown);
-
-  controls.addEventListener('touchstart', (event) => doTouchStart(event), {passive: true});
-  controls.addEventListener('touchend', (event) => doTouchEnd(event), {passive: true});
-
-  const hasTouchEvents = ('ontouchstart' in window);
-  if (!hasTouchEvents) {
-    controls.addEventListener('mousedown', (event) => doTouchStart(event));
-    controls.addEventListener('mouseup', (event) => doTouchEnd(event));
+    window.addEventListener('resize', onWindowResize);
+    window.addEventListener('orientationchange', onWindowResize);
+    window.addEventListener('hashchange', () => TEMPERATURE = getTemperature());
   }
 
-  controls.addEventListener('mouseover', (event) => doTouchMove(event, true));
-  controls.addEventListener('mouseout', (event) => doTouchMove(event, false));
-  controls.addEventListener('touchenter', (event) => doTouchMove(event, true));
-  controls.addEventListener('touchleave', (event) => doTouchMove(event, false));
-  canvas.addEventListener('mouseenter', () => mouseDownButton = null);
+  function updateNumButtons(num) {
+    NUM_BUTTONS = num;
+    const buttons = document.querySelectorAll('.controls > button.color');
+    BUTTON_MAPPING = (num === 4) ? MAPPING_4 : MAPPING_8;
 
-  // Output.
-  radioMidiOutYes.addEventListener('click', () => {
-    player.usingMidiOut = true;
-    midiOutBox.hidden = false;
-  });
-  radioAudioYes.addEventListener('click', () => {
-    player.usingMidiOut = false;
-    midiOutBox.hidden = true;
-  });
-  // Input.
-  radioMidiInYes.addEventListener('click', () => {
-    player.usingMidiIn = true;
-    midiInBox.hidden = false;
-    isUsingMakey = false;
-    updateButtonText();
-  });
-  radioDeviceYes.addEventListener('click', () => {
-    player.usingMidiIn = false;
-    midiInBox.hidden = true;
-    isUsingMakey = false;
-    updateButtonText();
-  });
-  radioMakeyYes.addEventListener('click', () => {
-    player.usingMidiIn = false;
-    midiInBox.hidden = true;
-    isUsingMakey = true;
-    updateButtonText();
-  });
+    // Hide the extra buttons.
+    for (let i = 0; i < buttons.length; i++) {
+      buttons[i].hidden = i >= num;
+    }
+  }
 
-  // Figure out if WebMidi works.
-  if (navigator.requestMIDIAccess) {
-    midiNotSupported.hidden = true;
-    radioMidiInYes.parentElement.removeAttribute('disabled');
-    radioMidiOutYes.parentElement.removeAttribute('disabled');
-    navigator.requestMIDIAccess()
-      .then(
+  function showMainScreen() {
+    document.querySelector('.splash').hidden = true;
+    document.querySelector('.loaded').hidden = false;
+
+    document.addEventListener('keydown',onKeyDown);
+
+    controls.addEventListener('touchstart', (event) => doTouchStart(event), {passive: true});
+    controls.addEventListener('touchend', (event) => doTouchEnd(event), {passive: true});
+
+    const hasTouchEvents = ('ontouchstart' in window);
+    if (!hasTouchEvents) {
+      controls.addEventListener('mousedown', (event) => doTouchStart(event));
+      controls.addEventListener('mouseup', (event) => doTouchEnd(event));
+    }
+
+    controls.addEventListener('mouseover', (event) => doTouchMove(event, true));
+    controls.addEventListener('mouseout', (event) => doTouchMove(event, false));
+    controls.addEventListener('touchenter', (event) => doTouchMove(event, true));
+    controls.addEventListener('touchleave', (event) => doTouchMove(event, false));
+    canvas.addEventListener('mouseenter', () => mouseDownButton = null);
+
+    // Output.
+    radioMidiOutYes.addEventListener('click', () => {
+      player.usingMidiOut = true;
+      midiOutBox.hidden = false;
+    });
+    radioAudioYes.addEventListener('click', () => {
+      player.usingMidiOut = false;
+      midiOutBox.hidden = true;
+    });
+    // Input.
+    radioMidiInYes.addEventListener('click', () => {
+      player.usingMidiIn = true;
+      midiInBox.hidden = false;
+      isUsingMakey = false;
+      updateButtonText();
+    });
+    radioDeviceYes.addEventListener('click', () => {
+      player.usingMidiIn = false;
+      midiInBox.hidden = true;
+      isUsingMakey = false;
+      updateButtonText();
+    });
+    radioMakeyYes.addEventListener('click', () => {
+      player.usingMidiIn = false;
+      midiInBox.hidden = true;
+      isUsingMakey = true;
+      updateButtonText();
+    });
+
+    // Figure out if WebMidi works.
+    if (navigator.requestMIDIAccess) {
+      midiNotSupported.hidden = true;
+      radioMidiInYes.parentElement.removeAttribute('disabled');
+      radioMidiOutYes.parentElement.removeAttribute('disabled');
+      navigator.requestMIDIAccess()
+        .then(
           (midi) => player.midiReady(midi),
           (err) => console.log('Something went wrong', err));
-  } else {
-    midiNotSupported.hidden = false;
-    radioMidiInYes.parentElement.setAttribute('disabled', true);
-    radioMidiOutYes.parentElement.setAttribute('disabled', true);
+    } else {
+      midiNotSupported.hidden = false;
+      radioMidiInYes.parentElement.setAttribute('disabled', true);
+      radioMidiOutYes.parentElement.setAttribute('disabled', true);
+    }
+
+    document.addEventListener('keyup', onKeyUp);
+
+    // Slow to start up, so do a fake prediction to warm up the model.
+    const note = genie.nextFromKeyWhitelist(0, keyWhitelist, TEMPERATURE);
+    genie.resetState();
   }
-
-  document.addEventListener('keyup', onKeyUp);
-
-  // Slow to start up, so do a fake prediction to warm up the model.
-  const note = genie.nextFromKeyWhitelist(0, keyWhitelist, TEMPERATURE);
-  genie.resetState();
-}
 
 // Here touch means either touch or mouse.
-function doTouchStart(event) {
-  event.preventDefault();
-  mouseDownButton = event.target;
-  buttonDown(event.target.dataset.id, true);
-}
-function doTouchEnd(event) {
-  event.preventDefault();
-  if (mouseDownButton && mouseDownButton !== event.target) {
-    buttonUp(mouseDownButton.dataset.id);
-  }
-  mouseDownButton = null;
-  buttonUp(event.target.dataset.id);
-}
-function doTouchMove(event, down) {
-   // If we're already holding a button down, start holding this one too.
-  if (!mouseDownButton)
-    return;
-
-  if (down)
+  function doTouchStart(event) {
+    event.preventDefault();
+    mouseDownButton = event.target;
     buttonDown(event.target.dataset.id, true);
-  else
-    buttonUp(event.target.dataset.id, true);
-}
+  }
+  function doTouchEnd(event) {
+    event.preventDefault();
+    if (mouseDownButton && mouseDownButton !== event.target) {
+      buttonUp(mouseDownButton.dataset.id);
+    }
+    mouseDownButton = null;
+    buttonUp(event.target.dataset.id);
+  }
+  function doTouchMove(event, down) {
+    // If we're already holding a button down, start holding this one too.
+    if (!mouseDownButton)
+      return;
 
-/*************************
- * Button actions
- ************************/
-function buttonDown(button, fromKeyDown) {
-  // If we're already holding this button down, nothing new to do.
-  if (heldButtonToVisualData.has(button)) {
-    return;
+    if (down)
+      buttonDown(event.target.dataset.id, true);
+    else
+      buttonUp(event.target.dataset.id, true);
   }
 
-  const el = document.getElementById(`btn${button}`);
-  if (!el)
-    return;
-  el.setAttribute('active', true);
+  /*************************
+   * Button actions
+   ************************/
+  function buttonDown(button, fromKeyDown) {
+    // If we're already holding this button down, nothing new to do.
+    if (heldButtonToVisualData.has(button)) {
+      return;
+    }
 
-  const note = genie.nextFromKeyWhitelist(BUTTON_MAPPING[button], keyWhitelist, TEMPERATURE);
-  const pitch = CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + note;
+    const el = document.getElementById(`btn${button}`);
+    if (!el)
+      return;
+    el.setAttribute('active', true);
 
-  // Hear it.
-  player.playNoteDown(pitch, button);
+    const note = genie.nextFromKeyWhitelist(BUTTON_MAPPING[button], keyWhitelist, TEMPERATURE);
+    const pitch = CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + note;
 
-  // See it.
-  const rect = piano.highlightNote(note, button);
+    // Hear it.
+    player.playNoteDown(pitch, button);
 
-  if (!rect) {
-    debugger;
+    // See it.
+    const rect = piano.highlightNote(note, button);
+
+    if (!rect) {
+      debugger;
+    }
+    // Float it.
+    const noteToPaint = painter.addNote(button, rect.getAttribute('x'), rect.getAttribute('width'));
+    heldButtonToVisualData.set(button, {rect:rect, note:note, noteToPaint:noteToPaint});
   }
-  // Float it.
-  const noteToPaint = painter.addNote(button, rect.getAttribute('x'), rect.getAttribute('width'));
-  heldButtonToVisualData.set(button, {rect:rect, note:note, noteToPaint:noteToPaint});
-}
 
-function buttonUp(button) {
-  const el = document.getElementById(`btn${button}`);
-  if (!el)
-    return;
-  el.removeAttribute('active');
+  function buttonUp(button) {
+    const el = document.getElementById(`btn${button}`);
+    if (!el)
+      return;
+    el.removeAttribute('active');
 
-  const thing = heldButtonToVisualData.get(button);
-  if (thing) {
-    // Don't see it.
-    piano.clearNote(thing.rect);
+    const thing = heldButtonToVisualData.get(button);
+    if (thing) {
+      // Don't see it.
+      piano.clearNote(thing.rect);
 
-    // Stop holding it down.
-    painter.stopNote(thing.noteToPaint);
+      // Stop holding it down.
+      painter.stopNote(thing.noteToPaint);
 
-    // Maybe stop hearing it.
-    const pitch = CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + thing.note;
-    if (!sustaining) {
-      player.playNoteUp(pitch, button);
+      // Maybe stop hearing it.
+      const pitch = CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + thing.note;
+      if (!sustaining) {
+        player.playNoteUp(pitch, button);
+      } else {
+        sustainingNotes.push(CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + thing.note);
+      }
+    }
+    heldButtonToVisualData.delete(button);
+  }
+
+  /*************************
+   * Events
+   ************************/
+  function onKeyDown(event) {
+    // Keydown fires continuously and we don't want that.
+    if (event.repeat) {
+      return;
+    }
+    if (event.key === ' ') {  // sustain pedal
+      sustaining = true;
+    } else if (event.key === '0' || event.key === 'r') {
+      console.log('🧞‍♀️ resetting!');
+      genie.resetState();
     } else {
-      sustainingNotes.push(CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + thing.note);
+      const button = getButtonFromKeyCode(event.key);
+      if (button != null) {
+        buttonDown(button, true);
+      }
     }
   }
-  heldButtonToVisualData.delete(button);
-}
 
-/*************************
- * Events
- ************************/
-function onKeyDown(event) {
-  // Keydown fires continuously and we don't want that.
-  if (event.repeat) {
-    return;
-  }
-  if (event.key === ' ') {  // sustain pedal
-    sustaining = true;
-  } else if (event.key === '0' || event.key === 'r') {
-    console.log('🧞‍♀️ resetting!');
-    genie.resetState();
-  } else {
-    const button = getButtonFromKeyCode(event.key);
-    if (button != null) {
-      buttonDown(button, true);
+  function onKeyUp(event) {
+    if (event.key === ' ') {  // sustain pedal
+      sustaining = false;
+
+      // Release everything.
+      sustainingNotes.forEach((note) => player.playNoteUp(note, -1));
+      sustainingNotes = [];
+    } else {
+      const button = getButtonFromKeyCode(event.key);
+      if (button != null) {
+        buttonUp(button);
+      }
     }
   }
-}
 
-function onKeyUp(event) {
-  if (event.key === ' ') {  // sustain pedal
-    sustaining = false;
+  function onWindowResize() {
+    OCTAVES = window.innerWidth > 700 ? 7 : 3;
+    const bonusNotes = OCTAVES > 6 ? 4 : 0;  // starts on an A, ends on a C.
+    const totalNotes = CONSTANTS.NOTES_PER_OCTAVE * OCTAVES + bonusNotes;
+    const totalWhiteNotes = CONSTANTS.WHITE_NOTES_PER_OCTAVE * OCTAVES + (bonusNotes - 1);
+    keyWhitelist = Array(totalNotes).fill().map((x,i) => {
+      if (OCTAVES > 6) return i;
+      // Starting 3 semitones up on small screens (on a C), and a whole octave up.
+      return i + 3 + CONSTANTS.NOTES_PER_OCTAVE;
+    });
 
-    // Release everything.
-    sustainingNotes.forEach((note) => player.playNoteUp(note, -1));
-    sustainingNotes = [];
-  } else {
-    const button = getButtonFromKeyCode(event.key);
-    if (button != null) {
-      buttonUp(button);
+    piano.resize(totalWhiteNotes);
+    painter.resize(piano.config.whiteNoteHeight);
+    piano.draw();
+  }
+
+  /*************************
+   * Utils and helpers
+   ************************/
+  function getButtonFromKeyCode(key) {
+    // 1 - 8
+    if (key >= '1' && key <= String(NUM_BUTTONS)) {
+      return parseInt(key) - 1;
     }
-  }
-}
 
-function onWindowResize() {
-  OCTAVES = window.innerWidth > 700 ? 7 : 3;
-  const bonusNotes = OCTAVES > 6 ? 4 : 0;  // starts on an A, ends on a C.
-  const totalNotes = CONSTANTS.NOTES_PER_OCTAVE * OCTAVES + bonusNotes;
-  const totalWhiteNotes = CONSTANTS.WHITE_NOTES_PER_OCTAVE * OCTAVES + (bonusNotes - 1);
-  keyWhitelist = Array(totalNotes).fill().map((x,i) => {
-    if (OCTAVES > 6) return i;
-    // Starting 3 semitones up on small screens (on a C), and a whole octave up.
-    return i + 3 + CONSTANTS.NOTES_PER_OCTAVE;
-  });
-
-  piano.resize(totalWhiteNotes);
-  painter.resize(piano.config.whiteNoteHeight);
-  piano.draw();
-}
-
-/*************************
- * Utils and helpers
- ************************/
-function getButtonFromKeyCode(key) {
-  // 1 - 8
-  if (key >= '1' && key <= String(NUM_BUTTONS)) {
-    return parseInt(key) - 1;
+    const index = isUsingMakey ? BUTTONS_MAKEY.indexOf(key) : BUTTONS_DEVICE.indexOf(key);
+    return index !== -1 ? index : null;
   }
 
-  const index = isUsingMakey ? BUTTONS_MAKEY.indexOf(key) : BUTTONS_DEVICE.indexOf(key);
-  return index !== -1 ? index : null;
-}
+  function getTemperature() {
+    const hash = parseFloat(parseHashParameters()['temperature']) || 0.25;
+    const newTemp = Math.min(1, hash);
+    console.log('🧞‍♀️ temperature = ', newTemp);
+    return newTemp;
+  }
 
-function getTemperature() {
-  const hash = parseFloat(parseHashParameters()['temperature']) || 0.25;
-  const newTemp = Math.min(1, hash);
-  console.log('🧞‍♀️ temperature = ', newTemp);
-  return newTemp;
-}
+  function parseHashParameters() {
+    const hash = window.location.hash.substring(1);
+    const params = {}
+    hash.split('&').map(hk => {
+      let temp = hk.split('=');
+      params[temp[0]] = temp[1]
+    });
+    return params;
+  }
 
-function parseHashParameters() {
-  const hash = window.location.hash.substring(1);
-  const params = {}
-  hash.split('&').map(hk => {
-    let temp = hk.split('=');
-    params[temp[0]] = temp[1]
-  });
-  return params;
-}
-
-function updateButtonText() {
-  const btns = document.querySelectorAll('.controls button.color');
-  for (let i = 0; i < btns.length; i++) {
-    btns[i].innerHTML = isUsingMakey ?
+  function updateButtonText() {
+    const btns = document.querySelectorAll('.controls button.color');
+    for (let i = 0; i < btns.length; i++) {
+      btns[i].innerHTML = isUsingMakey ?
         `<span>${BUTTONS_MAKEY_DISPLAY[i]}</span>` :
         `<span>${i + 1}</span><br><span>${BUTTONS_DEVICE[i]}</span>`;
+    }
   }
-}
+
+  document.querySelector('#playBtn').addEventListener('click', () => {
+    showMainScreen();
+  });
+};
+
