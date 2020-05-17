@@ -1,5 +1,5 @@
 /* globals IMAGINARY */
-import { initPianoGenie } from './original_script';
+import { initPianoGenie } from './piano-genie';
 
 const defaultConfig = {
   defaultLanguage: 'en',

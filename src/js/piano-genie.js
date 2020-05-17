@@ -1,3 +1,5 @@
+/* globals IMAGINARY */
+
 export function initPianoGenie() {
 
   const CONSTANTS = {
@@ -304,9 +306,9 @@ export function initPianoGenie() {
 // button mappings.
   const MAPPING_8 = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7};
   const MAPPING_4 = {0:0, 1:2, 2:5, 3:7};
-  const BUTTONS_DEVICE = ['a','s','d','f','j','k','l',';'];
-  const BUTTONS_MAKEY = ['ArrowUp','ArrowLeft','ArrowDown','ArrowRight','w','a','s','d'];
-  const BUTTONS_MAKEY_DISPLAY = ['↑','←','↓','→','w','a','s','d'];
+  const KEYCODES_NUMBERS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'];
+  const KEYCODES_STD = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'];
+  const KEYCODES_MAKEY = ['ArrowUp','ArrowLeft','ArrowDown','ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
   let OCTAVES = 7;
   let NUM_BUTTONS = 8;
@@ -535,7 +537,7 @@ export function initPianoGenie() {
       console.log('🧞‍♀️ resetting!');
       genie.resetState();
     } else {
-      const button = getButtonFromKeyCode(event.key);
+      const button = getButtonFromKeyCode(event.code);
       if (button != null) {
         buttonDown(button, true);
       }
@@ -550,7 +552,7 @@ export function initPianoGenie() {
       sustainingNotes.forEach((note) => player.playNoteUp(note, -1));
       sustainingNotes = [];
     } else {
-      const button = getButtonFromKeyCode(event.key);
+      const button = getButtonFromKeyCode(event.code);
       if (button != null) {
         buttonUp(button);
       }
@@ -576,13 +578,16 @@ export function initPianoGenie() {
   /*************************
    * Utils and helpers
    ************************/
-  function getButtonFromKeyCode(key) {
-    // 1 - 8
-    if (key >= '1' && key <= String(NUM_BUTTONS)) {
-      return parseInt(key) - 1;
+  function getButtonFromKeyCode(code) {
+    let index;
+    if (isUsingMakey) {
+      index = KEYCODES_MAKEY.indexOf(code);
+    } else {
+      index = KEYCODES_NUMBERS.indexOf(code);
+      if (index === -1) {
+        index = KEYCODES_STD.indexOf(code);
+      }
     }
-
-    const index = isUsingMakey ? BUTTONS_MAKEY.indexOf(key) : BUTTONS_DEVICE.indexOf(key);
     return index !== -1 ? index : null;
   }
 
@@ -605,10 +610,11 @@ export function initPianoGenie() {
 
   function updateButtonText() {
     const btns = document.querySelectorAll('.controls button.color');
+    const display = IMAGINARY.i18n.t(isUsingMakey ? 'keysMakeyMakey' : 'keys').split(' ');
     for (let i = 0; i < btns.length; i++) {
       btns[i].innerHTML = isUsingMakey ?
-        `<span>${BUTTONS_MAKEY_DISPLAY[i]}</span>` :
-        `<span>${i + 1}</span><br><span>${BUTTONS_DEVICE[i]}</span>`;
+        `<span>${display[i]}</span>` :
+        `<span>${i + 1}</span><br><span>${display[i]}</span>`;
     }
   }
 

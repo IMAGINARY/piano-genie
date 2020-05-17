@@ -1,7 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
-var _original_script = require("./original_script");
+var _pianoGenie = require("./piano-genie");
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -93,7 +93,7 @@ function _loadConfig() {
             });
 
           case 10:
-            (0, _original_script.initPianoGenie)();
+            (0, _pianoGenie.initPianoGenie)();
             _context.next = 16;
             break;
 
@@ -118,7 +118,7 @@ function _loadConfig() {
   return main;
 })()();
 
-},{"./original_script":2}],2:[function(require,module,exports){
+},{"./piano-genie":2}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -132,6 +132,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+/* globals IMAGINARY */
 function initPianoGenie() {
   var CONSTANTS = {
     COLORS: ['#EE2B29', '#ff9800', '#ffff00', '#c6ff00', '#00e5ff', '#2979ff', '#651fff', '#d500f9'],
@@ -520,9 +521,9 @@ function initPianoGenie() {
     2: 5,
     3: 7
   };
-  var BUTTONS_DEVICE = ['a', 's', 'd', 'f', 'j', 'k', 'l', ';'];
-  var BUTTONS_MAKEY = ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'w', 'a', 's', 'd'];
-  var BUTTONS_MAKEY_DISPLAY = ['↑', '←', '↓', '→', 'w', 'a', 's', 'd'];
+  var KEYCODES_NUMBERS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'];
+  var KEYCODES_STD = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'];
+  var KEYCODES_MAKEY = ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'];
   var OCTAVES = 7;
   var NUM_BUTTONS = 8;
   var BUTTON_MAPPING = MAPPING_8;
@@ -770,7 +771,7 @@ function initPianoGenie() {
       console.log('🧞‍♀️ resetting!');
       genie.resetState();
     } else {
-      var button = getButtonFromKeyCode(event.key);
+      var button = getButtonFromKeyCode(event.code);
 
       if (button != null) {
         buttonDown(button, true);
@@ -788,7 +789,7 @@ function initPianoGenie() {
       });
       sustainingNotes = [];
     } else {
-      var button = getButtonFromKeyCode(event.key);
+      var button = getButtonFromKeyCode(event.code);
 
       if (button != null) {
         buttonUp(button);
@@ -816,13 +817,19 @@ function initPianoGenie() {
    ************************/
 
 
-  function getButtonFromKeyCode(key) {
-    // 1 - 8
-    if (key >= '1' && key <= String(NUM_BUTTONS)) {
-      return parseInt(key) - 1;
+  function getButtonFromKeyCode(code) {
+    var index;
+
+    if (isUsingMakey) {
+      index = KEYCODES_MAKEY.indexOf(code);
+    } else {
+      index = KEYCODES_NUMBERS.indexOf(code);
+
+      if (index === -1) {
+        index = KEYCODES_STD.indexOf(code);
+      }
     }
 
-    var index = isUsingMakey ? BUTTONS_MAKEY.indexOf(key) : BUTTONS_DEVICE.indexOf(key);
     return index !== -1 ? index : null;
   }
 
@@ -845,9 +852,10 @@ function initPianoGenie() {
 
   function updateButtonText() {
     var btns = document.querySelectorAll('.controls button.color');
+    var display = IMAGINARY.i18n.t(isUsingMakey ? 'keysMakeyMakey' : 'keys').split(' ');
 
     for (var i = 0; i < btns.length; i++) {
-      btns[i].innerHTML = isUsingMakey ? "<span>".concat(BUTTONS_MAKEY_DISPLAY[i], "</span>") : "<span>".concat(i + 1, "</span><br><span>").concat(BUTTONS_DEVICE[i], "</span>");
+      btns[i].innerHTML = isUsingMakey ? "<span>".concat(display[i], "</span>") : "<span>".concat(i + 1, "</span><br><span>").concat(display[i], "</span>");
     }
   }
 
