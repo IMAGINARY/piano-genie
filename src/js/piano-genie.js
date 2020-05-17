@@ -3,7 +3,8 @@
 export function initPianoGenie() {
 
   const CONSTANTS = {
-    COLORS : ['#EE2B29','#ff9800','#ffff00','#c6ff00','#00e5ff','#2979ff','#651fff','#d500f9'],
+    COLORS : ['#db4c67','#ff8459','#ffec02','#73ff6c',
+      '#00c5ba','#3753be','#9c52ff','#ef71f2'],
     NUM_BUTTONS : 8,
     NOTES_PER_OCTAVE : 12,
     WHITE_NOTES_PER_OCTAVE : 7,

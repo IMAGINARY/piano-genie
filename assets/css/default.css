@@ -61,40 +61,39 @@ body {
 .background {
   width: 100vw;
   height: 100vh;
-  background: #141E30;
-  background: linear-gradient(to bottom, #243B55, #141E30); }
+  background: #000; }
 
 .color-0 {
-  background: #EE2B29;
-  fill: #EE2B29; }
+  background: #db4c67;
+  fill: #db4c67; }
 
 .color-1 {
-  background: #ff9800;
-  fill: #ff9800; }
+  background: #ff8459;
+  fill: #ff8459; }
 
 .color-2 {
-  background: #ffff00;
-  fill: #ffff00; }
+  background: #ffec02;
+  fill: #ffec02; }
 
 .color-3 {
-  background: #c6ff00;
-  fill: #c6ff00; }
+  background: #73ff6c;
+  fill: #73ff6c; }
 
 .color-4 {
-  background: #00e5ff;
-  fill: #00e5ff; }
+  background: #00c5ba;
+  fill: #00c5ba; }
 
 .color-5 {
-  background: #2979ff;
-  fill: #2979ff; }
+  background: #3753be;
+  fill: #3753be; }
 
 .color-6 {
-  background: #651fff;
-  fill: #651fff; }
+  background: #9c52ff;
+  fill: #9c52ff; }
 
 .color-7 {
-  background: #d500f9;
-  fill: #d500f9; }
+  background: #ef71f2;
+  fill: #ef71f2; }
 
 canvas {
   position: absolute;
