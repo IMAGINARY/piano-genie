@@ -621,6 +621,11 @@ export function initPianoGenie() {
     }
   }
 
+  document.querySelector('#btnInfo').addEventListener('click', () => {
+    const infoBox = document.querySelector('#infoBox');
+    infoBox.hidden = !infoBox.hidden;
+  });
+
   document.querySelector('#btnSettings').addEventListener('click', () => {
     const settingsBox = document.querySelector('#settingsBox');
     settingsBox.hidden = !settingsBox.hidden;

@@ -865,6 +865,10 @@ function initPianoGenie() {
     }
   }
 
+  document.querySelector('#btnInfo').addEventListener('click', function () {
+    var infoBox = document.querySelector('#infoBox');
+    infoBox.hidden = !infoBox.hidden;
+  });
   document.querySelector('#btnSettings').addEventListener('click', function () {
     var settingsBox = document.querySelector('#settingsBox');
     settingsBox.hidden = !settingsBox.hidden;

@@ -1,5 +1,6 @@
 .dialog {
   font-weight: 300;
+  line-height: 1.4;
   background: #1C2C42;
   color: white;
   padding: 24px;
@@ -8,10 +9,16 @@
   top: 20px;
   left: 50%;
   width: 80%;
-  max-width: 500px;
+  max-width: 600px;
   transform: translateX(-50%);
   border: 5px solid $color-yellow-dark;
   text-align: left;
+
+  h1 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0 0 0;
+  }
 
   h2 {
     font-size: 1.2em;

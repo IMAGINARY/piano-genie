@@ -28,7 +28,11 @@
   <svg id="svg"></svg>
 
   <div class="controls" id="controls">
-    <div class="spacer"></div>
+    <div class="utility-l">
+      <button class="info" id="btnInfo">
+        <img src="assets/img/fontawesome/info-circle-solid.svg">
+      </button>
+    </div>
     <div class="keyboard">
       <button class="color color-0" id="btn0" data-id="0"><span></span></button>
       <button class="color color-1" id="btn1" data-id="1"><span></span></button>
@@ -39,7 +43,7 @@
       <button class="color color-6" id="btn6" data-id="6"><span></span></button>
       <button class="color color-7" id="btn7" data-id="7"><span></span></button>
     </div>
-    <div class="utility">
+    <div class="utility-r">
       <button class="settings" id="btnSettings">
         <img src="assets/img/fontawesome/cog-solid.svg">
       </button>
@@ -112,6 +116,24 @@
   </p>
 
   <button class="splash-button small" onclick="settingsBox.hidden = !settingsBox.hidden">Close</button>
+</div>
+      <div class="dialog info" id="infoBox" hidden>
+  <h1>Piano Genie</h1>
+  <div class="splash-main">
+    <p>Have some fun pretending you're a piano virtuoso using machine learning!</p>
+    <p>Use the <b>1-8</b> numbered keys on your keyboard (or the home row <b>a-f</b> and <b>j-;</b>) or <b>touch</b> the
+      coloured blocks to play the piano. Use the <b>space bar</b> to control the sustain pedal. The more
+      you pretend you're a real player, the better the melody (and you!) will sound.
+    </p>
+  </div>
+  <p class="built-with">
+    Piano Genie was created by Chris Donahue, Ian Simon and Sander Dieleman and is part of the
+    Google Magenta project.
+    <br><br>
+    Adapted by IMAGINARY for the I AM AI exhibition with the support of the Carl-Zeiss-Foundation.
+  </p>
+
+  <button class="splash-button small" onclick="infoBox.hidden = !infoBox.hidden">Close</button>
 </div>
 
     </div>

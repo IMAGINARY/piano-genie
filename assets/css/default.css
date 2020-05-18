@@ -129,7 +129,7 @@ h1 {
   color: #CDF352; }
 
 .splash-main b {
-  background: #CDF352;
+  background: #ffec02;
   color: black;
   padding: 0 4px; }
 
@@ -222,44 +222,50 @@ button.splash-button.small {
       transform: scale(0.9, 0.9); }
     .controls button span {
       pointer-events: none; }
-  .controls .spacer {
-    flex: 0 0 150px; }
-    @media (max-width: 991.98px) {
-      .controls .spacer {
-        flex: 0 0 10px; } }
-  .controls .keyboard {
-    flex-grow: 1;
-    display: flex; }
-  .controls .utility {
+  .controls .utility-l, .controls .utility-r {
     flex: 0 0 150px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    padding-left: 20px; }
-    .controls .utility button {
+    display: flex; }
+    .controls .utility-l button, .controls .utility-r button {
       position: relative;
       background: transparent;
       fill: white;
       cursor: pointer;
       flex: 0 0 60px;
       height: 60px; }
-      .controls .utility button:hover {
+      .controls .utility-l button:hover, .controls .utility-r button:hover {
         fill: #CDF352; }
-      .controls .utility button img {
+      .controls .utility-l button img, .controls .utility-r button img {
         display: block;
         width: 30px;
         height: 30px;
         margin: auto auto; }
     @media (max-width: 991.98px) {
-      .controls .utility {
+      .controls .utility-l button, .controls .utility-r button {
+        flex: 0 0 40px; }
+        .controls .utility-l button img, .controls .utility-r button img {
+          width: 25px;
+          height: 25px; } }
+  .controls .utility-l {
+    padding-right: 20px;
+    align-items: flex-end;
+    justify-content: flex-start; }
+    @media (max-width: 991.98px) {
+      .controls .utility-l {
+        flex: 0 0 50px;
+        padding-right: 10px; } }
+  .controls .keyboard {
+    flex-grow: 1;
+    display: flex; }
+  .controls .utility-r {
+    flex: 0 0 150px;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-left: 20px; }
+    @media (max-width: 991.98px) {
+      .controls .utility-r {
         flex: 0 0 50px;
         flex-direction: column;
-        padding-left: 10px; }
-        .controls .utility button {
-          flex: 0 0 40px; }
-          .controls .utility button img {
-            width: 25px;
-            height: 25px; } }
+        padding-left: 10px; } }
 
 @media screen and (max-width: 700px) {
   .controls {
@@ -269,6 +275,7 @@ button.splash-button.small {
 
 .dialog {
   font-weight: 300;
+  line-height: 1.4;
   background: #1C2C42;
   color: white;
   padding: 24px;
@@ -277,10 +284,14 @@ button.splash-button.small {
   top: 20px;
   left: 50%;
   width: 80%;
-  max-width: 500px;
+  max-width: 600px;
   transform: translateX(-50%);
   border: 5px solid #cab900;
   text-align: left; }
+  .dialog h1 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0 0 0; }
   .dialog h2 {
     font-size: 1.2em;
     font-weight: bold;
