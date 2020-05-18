@@ -9,6 +9,7 @@ export function initPianoGenie() {
     NOTES_PER_OCTAVE : 12,
     WHITE_NOTES_PER_OCTAVE : 7,
     LOWEST_PIANO_KEY_MIDI_NOTE : 21,
+    NUM_NOTES: 88,
     GENIE_CHECKPOINT : 'model/genie',
   }
 
@@ -29,7 +30,7 @@ export function initPianoGenie() {
 
     loadAllSamples() {
       const seq = {notes:[]};
-      for (let i = 0; i < CONSTANTS.NOTES_PER_OCTAVE * OCTAVES; i++) {
+      for (let i = 0; i < CONSTANTS.NUM_NOTES; i++) {
         seq.notes.push({pitch: CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + i});
       }
       this.player.loadSamples(seq);
@@ -306,7 +307,7 @@ export function initPianoGenie() {
    ************************/
 // button mappings.
   const MAPPING_8 = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7};
-  const MAPPING_4 = {0:0, 1:2, 2:5, 3:7};
+  const MAPPING_4 = {0:0, 1:2, 2:5, 3:7, 4:0, 5:2, 6:5, 7:7};
   const KEYCODES_NUMBERS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'];
   const KEYCODES_STD = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'];
   const KEYCODES_MAKEY = ['ArrowUp','ArrowLeft','ArrowDown','ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'];
@@ -362,7 +363,7 @@ export function initPianoGenie() {
 
   function updateNumButtons(num) {
     NUM_BUTTONS = num;
-    const buttons = document.querySelectorAll('.controls > button.color');
+    const buttons = document.querySelectorAll('.controls > .keyboard > button.color');
     BUTTON_MAPPING = (num === 4) ? MAPPING_4 : MAPPING_8;
 
     // Hide the extra buttons.

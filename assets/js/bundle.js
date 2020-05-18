@@ -140,6 +140,7 @@ function initPianoGenie() {
     NOTES_PER_OCTAVE: 12,
     WHITE_NOTES_PER_OCTAVE: 7,
     LOWEST_PIANO_KEY_MIDI_NOTE: 21,
+    NUM_NOTES: 88,
     GENIE_CHECKPOINT: 'model/genie'
   };
   /*************************
@@ -167,7 +168,7 @@ function initPianoGenie() {
           notes: []
         };
 
-        for (var i = 0; i < CONSTANTS.NOTES_PER_OCTAVE * OCTAVES; i++) {
+        for (var i = 0; i < CONSTANTS.NUM_NOTES; i++) {
           seq.notes.push({
             pitch: CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + i
           });
@@ -519,7 +520,11 @@ function initPianoGenie() {
     0: 0,
     1: 2,
     2: 5,
-    3: 7
+    3: 7,
+    4: 0,
+    5: 2,
+    6: 5,
+    7: 7
   };
   var KEYCODES_NUMBERS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'];
   var KEYCODES_STD = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'];
@@ -575,7 +580,7 @@ function initPianoGenie() {
 
   function updateNumButtons(num) {
     NUM_BUTTONS = num;
-    var buttons = document.querySelectorAll('.controls > button.color');
+    var buttons = document.querySelectorAll('.controls > .keyboard > button.color');
     BUTTON_MAPPING = num === 4 ? MAPPING_4 : MAPPING_8; // Hide the extra buttons.
 
     for (var i = 0; i < buttons.length; i++) {
