@@ -862,6 +862,25 @@ function initPianoGenie() {
   document.querySelector('#playBtn').addEventListener('click', function () {
     showMainScreen();
   });
+  document.querySelector('#btnSettings').addEventListener('click', function () {
+    var settingsBox = document.querySelector('#settingsBox');
+    settingsBox.hidden = !settingsBox.hidden;
+  });
+  var body = document.querySelector('body');
+
+  if (!body.requestFullscreen) {
+    document.querySelector('#btnFullscreen').style.display = 'none';
+  } else {
+    document.querySelector('#btnFullscreen').addEventListener('click', function () {
+      if (!document.fullscreenElement) {
+        body.requestFullscreen()["catch"](function (err) {
+          alert("Error attempting to enable full-screen mode: ".concat(err.message, " (").concat(err.name, ")"));
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    });
+  }
 }
 
 ;

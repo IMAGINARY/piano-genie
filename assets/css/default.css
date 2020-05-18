@@ -61,7 +61,7 @@ body {
 .background {
   width: 100vw;
   height: 100vh;
-  background: #000; }
+  background: #021148; }
 
 .color-0 {
   background: #db4c67;
@@ -160,17 +160,17 @@ button.splash-button {
   font-family: inherit;
   font-size: 22px;
   display: block;
-  border: 2px solid #CDF352;
+  border: 2px solid #ffec02;
   background-color: transparent;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #CDF352;
+  color: #ffec02;
   text-align: center;
   transition: background-color 0.2s linear;
   width: 200px; }
 
 button.splash-button:hover {
-  background-color: #CDF352;
+  background-color: #ffec02;
   color: black; }
 
 button.splash-button.small {
@@ -188,80 +188,107 @@ button.splash-button.small {
   display: flex;
   position: absolute;
   /* center hack */
-  width: 80vw;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 100vw;
   bottom: 20px;
   height: 100px;
   z-index: 2; }
-
-.controls button {
-  border: none;
-  box-shadow: none;
-  margin: 0;
-  padding: 0;
-  flex-grow: 1;
-  height: 100%;
-  width: 100%;
-  transition: transform 0.2s linear;
-  font-family: inherit;
-  font-size: 20px;
-  font-weight: bold;
-  -webkit-user-select: none;
-  /* Safari 3.1+ */
-  -moz-user-select: none;
-  /* Firefox 2+ */
-  -ms-user-select: none;
-  /* IE 10+ */
-  user-select: none;
-  /* Standard syntax */
-  line-height: 1; }
-
-.controls button[active] {
-  transform: scale(0.9, 0.9); }
-
-.controls button.settings {
-  position: relative;
-  background: transparent;
-  fill: white;
-  cursor: pointer; }
-
-.controls button.settings:hover {
-  fill: #CDF352; }
-
-.controls button span {
-  pointer-events: none; }
+  .controls button {
+    display: block;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    transition: transform 0.2s linear;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    -webkit-user-select: none;
+    /* Safari 3.1+ */
+    -moz-user-select: none;
+    /* Firefox 2+ */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+    /* Standard syntax */
+    line-height: 1; }
+    .controls button[active] {
+      transform: scale(0.9, 0.9); }
+    .controls button span {
+      pointer-events: none; }
+  .controls .spacer {
+    flex: 0 0 150px; }
+    @media (max-width: 991.98px) {
+      .controls .spacer {
+        flex: 0 0 10px; } }
+  .controls .keyboard {
+    flex-grow: 1;
+    display: flex; }
+  .controls .utility {
+    flex: 0 0 150px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-left: 20px; }
+    .controls .utility button {
+      position: relative;
+      background: transparent;
+      fill: white;
+      cursor: pointer;
+      flex: 0 0 60px;
+      height: 60px; }
+      .controls .utility button:hover {
+        fill: #CDF352; }
+      .controls .utility button img {
+        display: block;
+        width: 30px;
+        height: 30px;
+        margin: auto auto; }
+    @media (max-width: 991.98px) {
+      .controls .utility {
+        flex: 0 0 50px;
+        flex-direction: column;
+        padding-left: 10px; }
+        .controls .utility button {
+          flex: 0 0 40px; }
+          .controls .utility button img {
+            width: 25px;
+            height: 25px; } }
 
 @media screen and (max-width: 700px) {
   .controls {
-    height: 70px;
-    width: 100vw; }
+    height: 70px; }
   canvas {
     top: 70px; } }
 
 .dialog {
-  font-weight: 100;
+  font-weight: 300;
   background: #1C2C42;
   color: white;
   padding: 24px;
   z-index: 10;
   position: fixed;
-  top: 100px;
+  top: 20px;
   left: 50%;
   width: 80%;
   max-width: 500px;
   transform: translateX(-50%);
-  border: 2px solid #CDF352;
-  -webkit-box-shadow: 8px 8px 0 #CDF352;
-  box-shadow: 8px 8px 0 #CDF352;
+  border: 5px solid #cab900;
   text-align: left; }
+  .dialog h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0 0 0; }
+  .dialog button.splash-button {
+    margin: 40px auto 10px; }
 
 .dialog select {
   color: white;
   font-family: inherit;
   font-size: 14px;
   border: none;
-  border-bottom: 2px solid #CDF352;
+  border-bottom: 2px solid #ffec02;
   background: transparent;
   box-shadow: none;
   margin-bottom: 6px;
@@ -272,8 +299,8 @@ button.splash-button.small {
  * Radio buttons
  ***********************/
 .control-indicator {
-  border: solid #CDF352 2px;
-  color: #CDF352;
+  border: solid #ffec02 2px;
+  color: #ffec02;
   border-radius: 2px; }
 
 label.radio {
@@ -289,7 +316,7 @@ label.radio > input[type="radio"] {
   z-index: -1; }
 
 label.radio > input:checked ~ .control-indicator {
-  background-color: #CDF352; }
+  background-color: #ffec02; }
 
 label.radio > .control-indicator {
   position: absolute;

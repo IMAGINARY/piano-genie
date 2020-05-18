@@ -36,18 +36,18 @@ button.splash-button {
     font-family: inherit;
     font-size: 22px;
     display: block;
-    border: 2px solid #CDF352;
+    border: 2px solid $color-yellow;
     background-color: transparent;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #CDF352;
+    color: $color-yellow;
     text-align: center;
     transition: background-color 0.2s linear;
     width: 200px;
 }
 
 button.splash-button:hover {
-    background-color: #CDF352;
+    background-color: $color-yellow;
     color: black;
 }
 

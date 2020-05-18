@@ -2,57 +2,95 @@
   display: flex;
   position: absolute;
   /* center hack */
-  width: 80vw;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 100vw;
   bottom: 20px;
   height: 100px;
   z-index: 2;
-}
 
-.controls button {
-  border: none;
-  box-shadow: none;
-  margin: 0;
-  padding: 0;
-  flex-grow: 1;
-  height: 100%;
-  width: 100%;
-  transition: transform 0.2s linear;
-  font-family: inherit;
-  font-size: 20px;
-  font-weight: bold;
-  -webkit-user-select: none; /* Safari 3.1+ */
-  -moz-user-select: none; /* Firefox 2+ */
-  -ms-user-select: none; /* IE 10+ */
-  user-select: none; /* Standard syntax */
-  line-height: 1;
-}
+  button {
+    display: block;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    transition: transform 0.2s linear;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none; /* Standard syntax */
+    line-height: 1;
 
-.controls button[active] {
-  transform: scale(0.9, 0.9)
-}
+    &[active] {
+      transform: scale(0.9, 0.9)
+    }
 
-.controls button.settings {
-  position: relative;
-  background: transparent;
-  fill: white;
-  cursor: pointer;
-}
+    span {
+      pointer-events: none;
+    }
+  }
 
-.controls button.settings:hover {
-  fill: #CDF352;
-}
+  .spacer {
+    flex: 0 0 150px;
+    @include media-breakpoint-down(md) {
+      flex: 0 0 10px;
+    }
+  }
 
-.controls button span {
-  pointer-events: none;
-}
+  .keyboard {
+    flex-grow: 1;
+    display: flex;
+  }
 
+  .utility {
+    flex: 0 0 150px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-left: 20px;
+
+    button {
+      position: relative;
+      background: transparent;
+      fill: white;
+      cursor: pointer;
+      flex: 0 0 60px;
+      height: 60px;
+
+      &:hover {
+        fill: #CDF352;
+      }
+
+      img {
+        display: block;
+        width: 30px;
+        height: 30px;
+        margin: auto auto;
+      }
+    }
+
+    @include media-breakpoint-down(md) {
+      flex: 0 0 50px;
+      flex-direction: column;
+      padding-left: 10px;
+      button {
+        flex: 0 0 40px;
+        img {
+          width: 25px;
+          height: 25px;
+        }
+      }
+    }
+  }
+}
 
 @media screen and (max-width: 700px) {
   .controls {
     height: 70px;
-    width: 100vw;
   }
 
   canvas {

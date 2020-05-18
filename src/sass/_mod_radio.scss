@@ -2,8 +2,8 @@
  * Radio buttons
  ***********************/
 .control-indicator {
-  border: solid #CDF352 2px;
-  color: #CDF352;
+  border: solid $color-yellow 2px;
+  color: $color-yellow;
   border-radius: 2px;
 }
 label.radio {
@@ -19,7 +19,7 @@ label.radio > input[type="radio"] {
   z-index: -1;
 }
 label.radio >  input:checked ~ .control-indicator {
-  background-color: #CDF352;
+  background-color: $color-yellow;
 }
 label.radio > .control-indicator {
   position: absolute;
