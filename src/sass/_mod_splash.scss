@@ -62,3 +62,9 @@ button.splash-button.small {
 @keyframes pulsing-fade {
     50% { opacity: 0.3; }
 }
+
+.loading {
+    font-size: 1.5em;
+    text-transform: uppercase;
+    color: $color-yellow;
+}

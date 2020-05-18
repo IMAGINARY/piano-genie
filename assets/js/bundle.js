@@ -553,10 +553,11 @@ function initPianoGenie() {
 
   function initEverything() {
     genie.initialize().then(function () {
-      console.log('🧞‍♀️ ready!');
-      playBtn.textContent = 'Play';
-      playBtn.removeAttribute('disabled');
-      playBtn.classList.remove('loading');
+      console.log('🧞‍♀️ ready!'); // playBtn.textContent = 'Play';
+      // playBtn.removeAttribute('disabled');
+      // playBtn.classList.remove('loading');
+
+      showMainScreen();
     }); // Start the drawing loop.
 
     onWindowResize();
@@ -864,9 +865,6 @@ function initPianoGenie() {
     }
   }
 
-  document.querySelector('#playBtn').addEventListener('click', function () {
-    showMainScreen();
-  });
   document.querySelector('#btnSettings').addEventListener('click', function () {
     var settingsBox = document.querySelector('#settingsBox');
     settingsBox.hidden = !settingsBox.hidden;

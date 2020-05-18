@@ -17,27 +17,10 @@
   <body>
     <div class="main">
       <div class="splash">
-  <h1>Piano Genie</h1>
-  <div class="splash-main">
-    <p>Have some fun pretending you're a piano virtuoso using machine learning!</p>
-    <p>Use the <b>1-8</b> numbered keys on your keyboard (or the home row <b>a-f</b> and <b>j-;</b>) or <b>touch</b> the
-      coloured blocks to play the piano. Use the <b>space bar</b> to control the sustain pedal. The more
-      you pretend you're a real player, the better the melody (and you!) will sound.
-    </p>
-
-    <div class="rotate-phone" hidden>
-      <div class="phone-icon">
-       <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24"><path d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm-2 20h-4v-1h4v1zm3.25-3H6.75V4h10.5v14z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
-      </div>
-      This works best if your phone is rotated in landscape mode. <br>
-    </div>
-
-    <button class="splash-button loading" id="playBtn" disabled autofocus><span>Loading...</span></button>
+  <div class="loading">Loading</div>
+  <div class="lds-ellipsis">
+    <div></div><div></div><div></div>
   </div>
-  <p class="built-with">
-    Built with <a target="_blank" href="https://magenta.tensorflow.org">magenta.js</a>. Learn more about <a target="_blank" href="https://magenta.tensorflow.org/pianogenie">how it works</a>,
-    or see the code on <a target="_blank" href="https://glitch.com/edit/#!/piano-genie">Glitch</a>.
-  </p>
 </div>
       <div class="loaded" hidden>
   <div class="background"></div>

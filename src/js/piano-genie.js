@@ -342,9 +342,10 @@ export function initPianoGenie() {
   function initEverything() {
     genie.initialize().then(() => {
       console.log('🧞‍♀️ ready!');
-      playBtn.textContent = 'Play';
-      playBtn.removeAttribute('disabled');
-      playBtn.classList.remove('loading');
+      // playBtn.textContent = 'Play';
+      // playBtn.removeAttribute('disabled');
+      // playBtn.classList.remove('loading');
+      showMainScreen();
     });
 
     // Start the drawing loop.
@@ -619,10 +620,6 @@ export function initPianoGenie() {
         `<span>${i + 1}</span><br><span>${display[i]}</span>`;
     }
   }
-
-  document.querySelector('#playBtn').addEventListener('click', () => {
-    showMainScreen();
-  });
 
   document.querySelector('#btnSettings').addEventListener('click', () => {
     const settingsBox = document.querySelector('#settingsBox');
