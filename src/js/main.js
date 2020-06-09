@@ -35,6 +35,10 @@ async function loadConfig(uri) {
       defaultLanguage: config.defaultLanguage || 'en',
     });
     initPianoGenie();
+
+    document.querySelectorAll('[data-i18n-field]').forEach((element) => {
+      element.innerHTML = IMAGINARY.i18n.t(element.getAttribute('data-i18n-field'));
+    });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(err);

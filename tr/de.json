@@ -1,4 +1,18 @@
 {
   "keys": "a s d f j k l ö",
-  "keysMakeyMakey": "↑ ← ↓ → w a s d"
+  "keysMakeyMakey": "↑ ← ↓ → w a s d",
+  "LOADING":  "Ladevorgang",
+  "INFO_APP_DESC": "Einmal Klaviervirtuose sein? Die KI hilft Ihnen dabei. Viel Spaß!",
+  "INFO_INSTRUCTIONS":  "Verwenden Sie die Zahlentasten <b>1-8</b> auf Ihrer Tastatur (oder die Tastenreihen <b>a-f</b> und <b>j-ö</b>) oder <b>drücken</b> Sie auf die farbigen Blöcke, um Klavier zu spielen. Verwenden Sie die <b>Leertaste</b>, um das Haltepedal einzusetzen. Hauen Sie ruhig richtig in die Tasten. Je überzeugter Sie Klavierspielen \"spielen\", desto überzeugender klingt das Ergebnis.",
+  "INFO_CREDITS": "Piano Genie wurde von Chris Donahue, Ian Simon und Sander Dieleman entwickelt und ist Teil des Google Magenta Projekts.<br><br>Adaptiert von IMAGINARY für die I AM A.I.-Ausstellung, gefördert durch die Carl-Zeiss-Stiftung.",
+  "DIALOG_CLOSE":  "Schließen",
+  "CFG_H_CONTROLS": "Einstellungen",
+  "CFG_L_NUM_BUTTONS":  "Anzahl der Tasten",
+  "CFG_H_IN_SETTINGS": "Eingang / Input",
+  "CFG_L_DEVICE":  "Verwendetes Gerät (Computer/Telefon)",
+  "CFG_L_IN_MAKEY": "Makey Makey",
+  "CFG_L_IN_MIDI":  "MIDI-Eingang",
+  "CFG_H_OUT_SETTINGS": "Audio-Ausgang / Output",
+  "CFG_L_OUT_MIDI":  "MIDI-Ausgang",
+  "CFG_T_MIDI_UNAVAILABLE": "MIDI nicht verfügbar."
 }

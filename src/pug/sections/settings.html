@@ -1,7 +1,7 @@
 <div class="dialog" id="settingsBox" hidden>
-  <h2>Game Controls</h2>
+  <h2 data-i18n-field="CFG_H_CONTROLS"></h2>
   <p>
-    Number of buttons:
+    <span data-i18n-field="CFG_L_NUM_BUTTONS">Number of buttons:</span>
     <label class="radio">
       <input name="num" type="radio" id="numButtons4">
       <span class="control-indicator"></span>
@@ -13,22 +13,22 @@
       8
     </label>
   </p>
-  <h2>Input Settings</h2>
+  <h2 data-i18n-field="CFG_H_IN_SETTINGS"></h2>
   <p>
     <label class="radio">
-      Current device (computer/phone)
+      <span data-i18n-field="CFG_L_DEVICE"></span>
       <input name="input" type="radio" id="radioDeviceYes" checked>
       <span class="control-indicator"></span>
     </label>
     <br>
     <label class="radio">
-      Makey Makey
+      <span data-i18n-field="CFG_L_IN_MAKEY"></span>
       <input name="input" type="radio" id="radioMakeyYes">
       <span class="control-indicator"></span>
     </label>
     <br>
     <label class="radio">
-      MIDI Input
+      <span data-i18n-field="CFG_L_IN_MIDI"></span>
       <input name="input" type="radio" id="radioMidiInYes">
       <span class="control-indicator"></span>
     </label>
@@ -37,16 +37,16 @@
     </span>
   </p>
 
-  <h2>Audio Output Settings</h2>
+  <h2 data-i18n-field="CFG_H_OUT_SETTINGS"></h2>
   <p>
     <label class="radio">
-      Current device (computer/phone)
+      <span data-i18n-field="CFG_L_DEVICE"></span>
       <input name="output" type="radio" id="radioAudioYes" checked>
       <span class="control-indicator"></span>
     </label>
     <br>
     <label class="radio">
-      MIDI Output
+      <span data-i18n-field="CFG_L_OUT_MIDI"></span>
       <input name="output" type="radio" id="radioMidiOutYes">
       <span class="control-indicator"></span>
     </label>
@@ -55,10 +55,7 @@
     </span>
   </p>
 
-  <p id="midiNotSupported">
-    Unfortunately, this browser does not support WebMIDI, which is only
-    supported in Chrome and Opera.
-  </p>
+  <p id="midiNotSupported" data-i18n-field="CFG_T_MIDI_UNAVAILABLE"></p>
 
-  <button class="splash-button small" onclick="settingsBox.hidden = !settingsBox.hidden">Close</button>
+  <button class="splash-button small" onclick="settingsBox.hidden = !settingsBox.hidden" data-i18n-field="DIALOG_CLOSE"></button>
 </div>

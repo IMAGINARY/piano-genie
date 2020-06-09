@@ -94,21 +94,24 @@ function _loadConfig() {
 
           case 10:
             (0, _pianoGenie.initPianoGenie)();
-            _context.next = 16;
+            document.querySelectorAll('[data-i18n-field]').forEach(function (element) {
+              element.innerHTML = IMAGINARY.i18n.t(element.getAttribute('data-i18n-field'));
+            });
+            _context.next = 17;
             break;
 
-          case 13:
-            _context.prev = 13;
+          case 14:
+            _context.prev = 14;
             _context.t4 = _context["catch"](0);
             // eslint-disable-next-line no-console
             console.error(_context.t4);
 
-          case 16:
+          case 17:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 13]]);
+    }, _callee, null, [[0, 14]]);
   }));
 
   function main() {

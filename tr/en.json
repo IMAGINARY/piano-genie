@@ -1,4 +1,18 @@
 {
   "keys": "a s d f j k l ;",
-  "keysMakeyMakey": "↑ ← ↓ → w a s d"
+  "keysMakeyMakey": "↑ ← ↓ → w a s d",
+  "LOADING":  "Loading",
+  "INFO_APP_DESC": "Have fun pretending you're a piano virtuoso using AI!",
+  "INFO_INSTRUCTIONS":  "Use the <b>1-8</b> numbered keys on your keyboard (or the home row <b>a-f</b> and <b>j-;</b>) or <b>touch</b> the coloured blocks to play the piano. Use the <b>space bar</b> to control the sustain pedal. The more you pretend you're a real player, the better the melody (and you!) will sound.",
+  "INFO_CREDITS": "Piano Genie was created by Chris Donahue, Ian Simon and Sander Dieleman and is part of the Google Magenta project.<br><br>Adapted by IMAGINARY for the I AM A.I. exhibition with the support of the Carl-Zeiss-Foundation.",
+  "DIALOG_CLOSE":  "Close",
+  "CFG_H_CONTROLS": "Controls",
+  "CFG_L_NUM_BUTTONS":  "Number of buttons",
+  "CFG_H_IN_SETTINGS": "Input Settings",
+  "CFG_L_DEVICE":  "Current device (computer/phone)",
+  "CFG_L_IN_MAKEY": "Makey Makey",
+  "CFG_L_IN_MIDI":  "MIDI Input",
+  "CFG_H_OUT_SETTINGS": "Audio Output Settings",
+  "CFG_L_OUT_MIDI":  "MIDI Output",
+  "CFG_T_MIDI_UNAVAILABLE": "MIDI Output"
 }
