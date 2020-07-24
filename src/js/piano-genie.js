@@ -1,6 +1,6 @@
 /* globals IMAGINARY */
 
-export function initPianoGenie() {
+export function initPianoGenie(options) {
 
   const CONSTANTS = {
     COLORS : ['#db4c67','#ff8459','#ffec02','#73ff6c',
@@ -302,6 +302,14 @@ export function initPianoGenie() {
     }
   }
 
+  function showFocusTip() {
+    document.querySelector('.embed-focus-tip').classList.add('visible');
+  }
+
+  function hideFocusTip() {
+    document.querySelector('.embed-focus-tip').classList.remove('visible');
+  }
+
   /*************************
    * Consts for everyone!
    ************************/
@@ -360,6 +368,14 @@ export function initPianoGenie() {
     window.addEventListener('resize', onWindowResize);
     window.addEventListener('orientationchange', onWindowResize);
     window.addEventListener('hashchange', () => TEMPERATURE = getTemperature());
+
+    if(options.embedMode) {
+      window.addEventListener('focus', () => { hideFocusTip(); });
+      window.addEventListener('blur', () => { showFocusTip(); });
+      if (!document.hasFocus()) {
+        showFocusTip();
+      }
+    }
   }
 
   function updateNumButtons(num) {

@@ -1,4 +1,5 @@
 /* globals IMAGINARY */
+import qs from 'qs';
 import { initPianoGenie } from './piano-genie';
 
 const defaultConfig = {
@@ -29,12 +30,19 @@ async function loadConfig(uri) {
 (async function main() {
   try {
     const config = Object.assign({}, defaultConfig, await loadConfig('./config.json'));
+    const qsArgs = qs.parse(window.location.search, { ignoreQueryPrefix: true });
+
+    if(qsArgs.embed !== undefined) {
+      config.embedMode = true;
+    }
+
     await IMAGINARY.i18n.init({
       queryStringVariable: 'lang',
       translationsDirectory: 'tr',
       defaultLanguage: config.defaultLanguage || 'en',
     });
-    initPianoGenie();
+
+    initPianoGenie(config);
 
     document.querySelectorAll('[data-i18n-field]').forEach((element) => {
       element.innerHTML = IMAGINARY.i18n.t(element.getAttribute('data-i18n-field'));

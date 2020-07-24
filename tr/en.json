@@ -14,5 +14,6 @@
   "CFG_L_IN_MIDI":  "MIDI Input",
   "CFG_H_OUT_SETTINGS": "Audio Output Settings",
   "CFG_L_OUT_MIDI":  "MIDI Output",
-  "CFG_T_MIDI_UNAVAILABLE": "MIDI Output"
+  "CFG_T_MIDI_UNAVAILABLE": "MIDI Output",
+  "CLICK_HERE_KEYBOARD": "Click here to play using your keyboard."
 }

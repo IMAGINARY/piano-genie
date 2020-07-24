@@ -273,6 +273,26 @@ button.splash-button.small {
   canvas {
     top: 70px; } }
 
+.embed-focus-tip {
+  position: absolute;
+  /* center hack */
+  width: 60vw;
+  left: 20vw;
+  bottom: 200px;
+  z-index: 3;
+  font-size: 20px;
+  line-height: 24px;
+  padding: 12px 1em;
+  font-weight: bold;
+  border-radius: 24px;
+  background-color: rgba(255, 255, 255, 0.75);
+  color: #07195f;
+  opacity: 0;
+  transition: opacity 0.5s linear;
+  pointer-events: none; }
+  .embed-focus-tip.visible {
+    opacity: 1; }
+
 .dialog {
   font-weight: 300;
   line-height: 1.4;

@@ -18,6 +18,12 @@ Keys supported are:
 
 - **defaultLanguage** (string): Default language, indicated as an ISO two letter code.
 
+## Query string options
+
+The following query string options are supported
+
+- **embed**: Add this query string if the app is run embedded in another page.
+
 ## Compilation
 
 This app is built using several compilable languages:

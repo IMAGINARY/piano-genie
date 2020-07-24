@@ -1,14 +1,16 @@
 {
-  "name": "my-project-name",
+  "name": "piano-genie",
   "version": "0.1.0",
-  "description": "My project description",
-  "repository": "github:IMAGINARY/my-repository",
-  "author": "My Name <info@imaginary.org>",
+  "description": "Piano Genie",
+  "repository": "github:IMAGINARY/piano-genie",
+  "author": "Eric Londaits <eric.londaits@imaginary.org>",
   "private": true,
   "engines": {
     "node": ">=10.14.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "qs": "^6.9.4"
+  },
   "devDependencies": {
     "@babel/core": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
