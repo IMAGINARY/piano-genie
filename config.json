@@ -1,3 +1,9 @@
 {
-  "defaultLanguage": "en"
+  "defaultLanguage": "en",
+  "showInfoButton": true,
+  "showConfigButton": true,
+  "showFullScreenButton": true,
+  "showInputKeys": true,
+  "showInputKeysText": true,
+  "showInputInstructions": true
 }

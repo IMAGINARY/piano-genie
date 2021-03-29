@@ -16,7 +16,18 @@ The app can be configured through the config.json file in its root directory.
 
 Keys supported are:
 
-- **defaultLanguage** (string): Default language, indicated as an ISO two letter code.
+- **defaultLanguage** (string, default: 'en'): Default language, indicated as an ISO two letter code.
+- **showInfoButton** (bool, default: true): If true shows an info button with instructions 
+    and credits
+- **showConfigButton** (bool, default: true): If true shows a button that opens the 
+    configuration dialogue.
+- **showFullScreenButton** (bool, default: true): If true, shows a button that puts the
+    app in full screen.
+- **showInputKeys** (bool, default: true): If true, shows input keys. 
+- **showInputKeysText** (bool, default: true): If true, shows text on the input keys indicating what
+    keyboard keys to press. Set to false for touchscreen operation.
+- **showInputInstructions** (bool, default: true): If true, shows input instructions in the info screen.
+    Set to false for touchscreen or dedicated input hardware.
 
 ## Query string options
 

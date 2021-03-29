@@ -630,10 +630,16 @@ export function initPianoGenie(options) {
   function updateButtonText() {
     const btns = document.querySelectorAll('.controls button.color');
     const display = IMAGINARY.i18n.t(isUsingMakey ? 'keysMakeyMakey' : 'keys').split(' ');
-    for (let i = 0; i < btns.length; i++) {
-      btns[i].innerHTML = isUsingMakey ?
-        `<span>${display[i]}</span>` :
-        `<span>${i + 1}</span><br><span>${display[i]}</span>`;
+    for (let i = 0; i < btns.length; i += 1) {
+      if (options.showInputKeysText) {
+        btns[i].innerHTML = isUsingMakey
+          ? `<span>${display[i]}</span>`
+          : `<span>${i + 1}</span><br><span>${display[i]}</span>`;
+      }
+
+      if (!options.showInputKeys) {
+        btns[i].style.display = 'none';
+      }
     }
   }
 
@@ -642,13 +648,25 @@ export function initPianoGenie(options) {
     infoBox.hidden = !infoBox.hidden;
   });
 
+  if (!options.showInfoButton) {
+    document.querySelector('#btnInfo').style.display = 'none';
+  }
+
+  if (!options.showInputInstructions) {
+    document.querySelector('[data-i18n-field=INFO_INSTRUCTIONS]').style.display = 'none';
+  }
+
   document.querySelector('#btnSettings').addEventListener('click', () => {
     const settingsBox = document.querySelector('#settingsBox');
     settingsBox.hidden = !settingsBox.hidden;
   });
 
+  if (!options.showConfigButton) {
+    document.querySelector('#btnSettings').style.display = 'none';
+  }
+
   const body = document.querySelector('body');
-  if (!body.requestFullscreen) {
+  if (!body.requestFullscreen || !options.showFullScreenButton) {
     document.querySelector('#btnFullscreen').style.display = 'none';
   } else {
     document.querySelector('#btnFullscreen').addEventListener('click', () => {
@@ -661,5 +679,4 @@ export function initPianoGenie(options) {
       }
     });
   }
-};
-
+}

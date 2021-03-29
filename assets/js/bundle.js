@@ -12,7 +12,12 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 var defaultConfig = {
-  defaultLanguage: 'en'
+  defaultLanguage: 'en',
+  showInfoButton: true,
+  showConfigButton: true,
+  showFullScreenButton: true,
+  showInputKeys: true,
+  showInputInstructions: true
 };
 /**
  * Loads the config file from an external JSON file
@@ -896,8 +901,14 @@ function initPianoGenie(options) {
     var btns = document.querySelectorAll('.controls button.color');
     var display = IMAGINARY.i18n.t(isUsingMakey ? 'keysMakeyMakey' : 'keys').split(' ');
 
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].innerHTML = isUsingMakey ? "<span>".concat(display[i], "</span>") : "<span>".concat(i + 1, "</span><br><span>").concat(display[i], "</span>");
+    for (var i = 0; i < btns.length; i += 1) {
+      if (options.showInputKeysText) {
+        btns[i].innerHTML = isUsingMakey ? "<span>".concat(display[i], "</span>") : "<span>".concat(i + 1, "</span><br><span>").concat(display[i], "</span>");
+      }
+
+      if (!options.showInputKeys) {
+        btns[i].style.display = 'none';
+      }
     }
   }
 
@@ -905,13 +916,27 @@ function initPianoGenie(options) {
     var infoBox = document.querySelector('#infoBox');
     infoBox.hidden = !infoBox.hidden;
   });
+
+  if (!options.showInfoButton) {
+    document.querySelector('#btnInfo').style.display = 'none';
+  }
+
+  if (!options.showInputInstructions) {
+    document.querySelector('[data-i18n-field=INFO_INSTRUCTIONS]').style.display = 'none';
+  }
+
   document.querySelector('#btnSettings').addEventListener('click', function () {
     var settingsBox = document.querySelector('#settingsBox');
     settingsBox.hidden = !settingsBox.hidden;
   });
+
+  if (!options.showConfigButton) {
+    document.querySelector('#btnSettings').style.display = 'none';
+  }
+
   var body = document.querySelector('body');
 
-  if (!body.requestFullscreen) {
+  if (!body.requestFullscreen || !options.showFullScreenButton) {
     document.querySelector('#btnFullscreen').style.display = 'none';
   } else {
     document.querySelector('#btnFullscreen').addEventListener('click', function () {
@@ -925,8 +950,6 @@ function initPianoGenie(options) {
     });
   }
 }
-
-;
 
 },{}],3:[function(require,module,exports){
 'use strict';

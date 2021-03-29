@@ -4,6 +4,11 @@ import { initPianoGenie } from './piano-genie';
 
 const defaultConfig = {
   defaultLanguage: 'en',
+  showInfoButton: true,
+  showConfigButton: true,
+  showFullScreenButton: true,
+  showInputKeys: true,
+  showInputInstructions: true,
 };
 
 /**
@@ -32,7 +37,7 @@ async function loadConfig(uri) {
     const config = Object.assign({}, defaultConfig, await loadConfig('./config.json'));
     const qsArgs = qs.parse(window.location.search, { ignoreQueryPrefix: true });
 
-    if(qsArgs.embed !== undefined) {
+    if (qsArgs.embed !== undefined) {
       config.embedMode = true;
     }
 
