@@ -8,6 +8,7 @@ const defaultConfig = {
   showConfigButton: true,
   showFullScreenButton: true,
   showInputKeys: true,
+  showInputKeysText: true,
   showInputInstructions: true,
   keyCount: 8,
   input: 'keyboard',
@@ -21,13 +22,16 @@ const defaultConfig = {
  * @return {Promise<any>}
  */
 async function loadConfig(uri) {
-  const response = await fetch(uri);
+  const response = await fetch(uri, { cache: 'no-store' });
   if (response.status >= 200 && response.status < 300) {
     try {
       return await response.json();
     } catch (e) {
       throw new Error(`Error parsing config file: ${e.message}`);
     }
+  }
+  if (response.status === 404) {
+    return {};
   }
   throw new Error(`Server returned status ${response.status} (${response.statusText}) loading config file.`);
 }
@@ -37,8 +41,8 @@ async function loadConfig(uri) {
  */
 (async function main() {
   try {
-    const config = Object.assign({}, defaultConfig, await loadConfig('./config.json'));
     const qsArgs = qs.parse(window.location.search, { ignoreQueryPrefix: true });
+    const config = Object.assign({}, defaultConfig, await loadConfig('./config.json'));
 
     if (qsArgs.embed !== undefined) {
       config.embedMode = true;

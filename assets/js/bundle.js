@@ -17,6 +17,7 @@ var defaultConfig = {
   showConfigButton: true,
   showFullScreenButton: true,
   showInputKeys: true,
+  showInputKeysText: true,
   showInputInstructions: true,
   keyCount: 8,
   input: 'keyboard',
@@ -45,7 +46,9 @@ function _loadConfig() {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.next = 2;
-            return fetch(uri);
+            return fetch(uri, {
+              cache: 'no-store'
+            });
 
           case 2:
             response = _context2.sent;
@@ -68,9 +71,17 @@ function _loadConfig() {
             throw new Error("Error parsing config file: ".concat(_context2.t0.message));
 
           case 13:
+            if (!(response.status === 404)) {
+              _context2.next = 15;
+              break;
+            }
+
+            return _context2.abrupt("return", {});
+
+          case 15:
             throw new Error("Server returned status ".concat(response.status, " (").concat(response.statusText, ") loading config file."));
 
-          case 14:
+          case 16:
           case "end":
             return _context2.stop();
         }
@@ -82,24 +93,24 @@ function _loadConfig() {
 
 (function () {
   var _main = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-    var config, qsArgs;
+    var qsArgs, config;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             _context.prev = 0;
-            _context.t0 = Object;
-            _context.t1 = {};
-            _context.t2 = defaultConfig;
-            _context.next = 6;
-            return loadConfig('./config.json');
-
-          case 6:
-            _context.t3 = _context.sent;
-            config = _context.t0.assign.call(_context.t0, _context.t1, _context.t2, _context.t3);
             qsArgs = _qs["default"].parse(window.location.search, {
               ignoreQueryPrefix: true
             });
+            _context.t0 = Object;
+            _context.t1 = {};
+            _context.t2 = defaultConfig;
+            _context.next = 7;
+            return loadConfig('./config.json');
+
+          case 7:
+            _context.t3 = _context.sent;
+            config = _context.t0.assign.call(_context.t0, _context.t1, _context.t2, _context.t3);
 
             if (qsArgs.embed !== undefined) {
               config.embedMode = true;

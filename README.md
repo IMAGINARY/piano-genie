@@ -12,7 +12,8 @@ The more you pretend you're a real player, the better the melody (and you!) will
 
 ## Configuration
 
-The app can be configured through the config.json file in its root directory.
+The app can be configured through the config.json file in its root directory. Copy the 
+`config.sample.json` file to `config.json` and modify its values as desired.
 
 Keys supported are:
 
