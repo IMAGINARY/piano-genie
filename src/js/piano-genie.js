@@ -321,7 +321,7 @@ export function initPianoGenie(options) {
   const KEYCODES_MAKEY = ['ArrowUp','ArrowLeft','ArrowDown','ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
   let OCTAVES = 7;
-  let NUM_BUTTONS = 8;
+  let NUM_BUTTONS = options.keyCount === 4 ? 4 : 8;
   let BUTTON_MAPPING = MAPPING_8;
 
   let keyWhitelist;
@@ -364,6 +364,9 @@ export function initPianoGenie(options) {
     // Event listeners.
     document.getElementById('numButtons4').addEventListener('change', (event) => event.target.checked && updateNumButtons(4));
     document.getElementById('numButtons8').addEventListener('change', (event) => event.target.checked && updateNumButtons(8));
+    document.getElementById('numButtons4').checked = (NUM_BUTTONS === 4);
+    document.getElementById('numButtons8').checked = (NUM_BUTTONS !== 4);
+    updateNumButtons(NUM_BUTTONS);
 
     window.addEventListener('resize', onWindowResize);
     window.addEventListener('orientationchange', onWindowResize);
@@ -419,6 +422,13 @@ export function initPianoGenie(options) {
       player.usingMidiOut = false;
       midiOutBox.hidden = true;
     });
+
+    if (options.output === 'wave') {
+      radioAudioYes.click();
+    } else if (options.output === 'midi') {
+      radioMidiOutYes.click();
+    }
+
     // Input.
     radioMidiInYes.addEventListener('click', () => {
       player.usingMidiIn = true;
@@ -438,6 +448,14 @@ export function initPianoGenie(options) {
       isUsingMakey = true;
       updateButtonText();
     });
+
+    if (options.input === 'keyboard') {
+      radioDeviceYes.click();
+    } else if (options.input === 'makey') {
+      radioMakeyYes.click();
+    } else if (options.input === 'midi') {
+      radioMidiInYes.click();
+    }
 
     // Figure out if WebMidi works.
     if (navigator.requestMIDIAccess) {

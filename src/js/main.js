@@ -9,6 +9,9 @@ const defaultConfig = {
   showFullScreenButton: true,
   showInputKeys: true,
   showInputInstructions: true,
+  keyCount: 8,
+  input: 'keyboard',
+  output: 'wave',
 };
 
 /**

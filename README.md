@@ -28,6 +28,11 @@ Keys supported are:
     keyboard keys to press. Set to false for touchscreen operation.
 - **showInputInstructions** (bool, default: true): If true, shows input instructions in the info screen.
     Set to false for touchscreen or dedicated input hardware.
+- **keyCount** (4 or 8, default: 8): Number of keys to show.
+- **input** (string, default: 'keyboard'): Input device. Can be 'keyboard', 'makey' for Makey Makey, or 'midi'.
+  NOTE: Midi support is hacky and needs more work.
+- **output** (string, default: 'wave'): Output device. Can be 'wave' or 'midi'.
+  NOTE: Midi support is hacky and needs more work.
 
 ## Query string options
 

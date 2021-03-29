@@ -17,7 +17,10 @@ var defaultConfig = {
   showConfigButton: true,
   showFullScreenButton: true,
   showInputKeys: true,
-  showInputInstructions: true
+  showInputInstructions: true,
+  keyCount: 8,
+  input: 'keyboard',
+  output: 'wave'
 };
 /**
  * Loads the config file from an external JSON file
@@ -558,7 +561,7 @@ function initPianoGenie(options) {
   var KEYCODES_STD = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'];
   var KEYCODES_MAKEY = ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'];
   var OCTAVES = 7;
-  var NUM_BUTTONS = 8;
+  var NUM_BUTTONS = options.keyCount === 4 ? 4 : 8;
   var BUTTON_MAPPING = MAPPING_8;
   var keyWhitelist;
   var TEMPERATURE = getTemperature();
@@ -600,6 +603,9 @@ function initPianoGenie(options) {
     document.getElementById('numButtons8').addEventListener('change', function (event) {
       return event.target.checked && updateNumButtons(8);
     });
+    document.getElementById('numButtons4').checked = NUM_BUTTONS === 4;
+    document.getElementById('numButtons8').checked = NUM_BUTTONS !== 4;
+    updateNumButtons(NUM_BUTTONS);
     window.addEventListener('resize', onWindowResize);
     window.addEventListener('orientationchange', onWindowResize);
     window.addEventListener('hashchange', function () {
@@ -678,7 +684,14 @@ function initPianoGenie(options) {
     radioAudioYes.addEventListener('click', function () {
       player.usingMidiOut = false;
       midiOutBox.hidden = true;
-    }); // Input.
+    });
+
+    if (options.output === 'wave') {
+      radioAudioYes.click();
+    } else if (options.output === 'midi') {
+      radioMidiOutYes.click();
+    } // Input.
+
 
     radioMidiInYes.addEventListener('click', function () {
       player.usingMidiIn = true;
@@ -697,7 +710,16 @@ function initPianoGenie(options) {
       midiInBox.hidden = true;
       isUsingMakey = true;
       updateButtonText();
-    }); // Figure out if WebMidi works.
+    });
+
+    if (options.input === 'keyboard') {
+      radioDeviceYes.click();
+    } else if (options.input === 'makey') {
+      radioMakeyYes.click();
+    } else if (options.input === 'midi') {
+      radioMidiInYes.click();
+    } // Figure out if WebMidi works.
+
 
     if (navigator.requestMIDIAccess) {
       midiNotSupported.hidden = true;

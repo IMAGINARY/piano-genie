@@ -5,5 +5,8 @@
   "showFullScreenButton": true,
   "showInputKeys": true,
   "showInputKeysText": true,
-  "showInputInstructions": true
+  "showInputInstructions": true,
+  "keyCount": 8,
+  "input": "keyboard",
+  "output": "wave"
 }
