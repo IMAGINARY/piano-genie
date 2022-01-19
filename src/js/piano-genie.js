@@ -333,9 +333,7 @@ export function initPianoGenie(options) {
   let sustaining = false
   let sustainingNotes = [];
 
-// Mousedown/up events are weird because you can mouse down in one element and mouse up
-// in another, so you're going to lose that original element and never mouse it up.
-  let mouseDownButton = null;
+  const inputsForButtons = new Map();
 
   const player = new Player();
   const genie = new mm.PianoGenie(CONSTANTS.GENIE_CHECKPOINT);
@@ -398,20 +396,16 @@ export function initPianoGenie(options) {
 
     document.addEventListener('keydown',onKeyDown);
 
-    controls.addEventListener('touchstart', (event) => doTouchStart(event), {passive: true});
-    controls.addEventListener('touchend', (event) => doTouchEnd(event), {passive: true});
-
-    const hasTouchEvents = ('ontouchstart' in window);
-    if (!hasTouchEvents) {
-      controls.addEventListener('mousedown', (event) => doTouchStart(event));
-      controls.addEventListener('mouseup', (event) => doTouchEnd(event));
+    const noop = () => {};
+    const filterActivePointer = (cb) => e => e.buttons !== 0 ? cb(e) : noop();
+    const buttons = document.querySelectorAll(".keyboard button.color");
+    for(const button of buttons) {
+      button.addEventListener('pointercancel', doPointerStart);
+      button.addEventListener('pointerdown', doPointerStart);
+      button.addEventListener('pointerup', doPointerEnd);
+      button.addEventListener('pointerover', filterActivePointer(doPointerStart));
+      button.addEventListener('pointerout', filterActivePointer(doPointerEnd));
     }
-
-    controls.addEventListener('mouseover', (event) => doTouchMove(event, true));
-    controls.addEventListener('mouseout', (event) => doTouchMove(event, false));
-    controls.addEventListener('touchenter', (event) => doTouchMove(event, true));
-    controls.addEventListener('touchleave', (event) => doTouchMove(event, false));
-    canvas.addEventListener('mouseenter', () => mouseDownButton = null);
 
     // Output.
     radioMidiOutYes.addEventListener('click', () => {
@@ -479,35 +473,47 @@ export function initPianoGenie(options) {
     genie.resetState();
   }
 
-// Here touch means either touch or mouse.
-  function doTouchStart(event) {
+  function preprocessPointerEvent(event) {
     event.preventDefault();
-    mouseDownButton = event.target;
-    buttonDown(event.target.dataset.id, true);
+    const buttonId = event.target.dataset.id;
+    const inputString = `pointer_${event.pointerId}`;
+    return {buttonId, inputString};
   }
-  function doTouchEnd(event) {
-    event.preventDefault();
-    if (mouseDownButton && mouseDownButton !== event.target) {
-      buttonUp(mouseDownButton.dataset.id);
-    }
-    mouseDownButton = null;
-    buttonUp(event.target.dataset.id);
-  }
-  function doTouchMove(event, down) {
-    // If we're already holding a button down, start holding this one too.
-    if (!mouseDownButton)
-      return;
 
-    if (down)
-      buttonDown(event.target.dataset.id, true);
-    else
-      buttonUp(event.target.dataset.id, true);
+  // Here pointer means either touch or mouse.
+  function doPointerStart(event) {
+    doInputStart(preprocessPointerEvent(event));
+  }
+  function doPointerEnd(event) {
+    doInputEnd(preprocessPointerEvent(event));
+  }
+
+  function doInputStart({buttonId, inputString}) {
+    if(!inputsForButtons.has(buttonId)) {
+      inputsForButtons.set(buttonId, new Set());
+    }
+    const inputsForButton = inputsForButtons.get(buttonId);
+    if(inputsForButton.size === 0) {
+      buttonDown(buttonId);
+    }
+    inputsForButton.add(inputString);
+  }
+
+  function doInputEnd({buttonId, inputString}) {
+    if(!inputsForButtons.has(buttonId)) {
+      inputsForButtons.set(buttonId, new Set());
+    }
+    const inputsForButton = inputsForButtons.get(buttonId);
+    inputsForButton.delete(inputString)
+    if(inputsForButton.size === 0) {
+      buttonUp(buttonId);
+    }
   }
 
   /*************************
    * Button actions
    ************************/
-  function buttonDown(button, fromKeyDown) {
+  function buttonDown(button) {
     // If we're already holding this button down, nothing new to do.
     if (heldButtonToVisualData.has(button)) {
       return;
@@ -576,7 +582,9 @@ export function initPianoGenie(options) {
     } else {
       const button = getButtonFromKeyCode(event.code);
       if (button != null) {
-        buttonDown(button, true);
+        const buttonId = `${button}`;
+        const inputString = `key_${event.code}`;
+        doInputStart({buttonId, inputString});
       }
     }
   }
@@ -591,7 +599,9 @@ export function initPianoGenie(options) {
     } else {
       const button = getButtonFromKeyCode(event.code);
       if (button != null) {
-        buttonUp(button);
+        const buttonId = `${button}`;
+        const inputString = `key_${event.code}`;
+        doInputEnd({buttonId, inputString});
       }
     }
   }

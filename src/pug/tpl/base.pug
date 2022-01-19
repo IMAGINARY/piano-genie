@@ -19,7 +19,7 @@ html
     title
       != (title ? title + ' - ' + config.siteName : config.siteName )
     block head
-  body(class!=body.class.join(' '))
+  body(class!=body.class.join(' '), touch-action='none')
     block body
     script(type="text/javascript", src="vendor/magenta/music-1.3.1.js")
     script(type="text/javascript", src="vendor/i18n4js/i18n4js-1.3.1.min.js")

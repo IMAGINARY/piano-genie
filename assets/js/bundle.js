@@ -160,6 +160,12 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.initPianoGenie = initPianoGenie;
 
+function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -579,10 +585,8 @@ function initPianoGenie(options) {
   var heldButtonToVisualData = new Map(); // Which notes the pedal is sustaining.
 
   var sustaining = false;
-  var sustainingNotes = []; // Mousedown/up events are weird because you can mouse down in one element and mouse up
-  // in another, so you're going to lose that original element and never mouse it up.
-
-  var mouseDownButton = null;
+  var sustainingNotes = [];
+  var inputsForButtons = new Map();
   var player = new Player();
   var genie = new mm.PianoGenie(CONSTANTS.GENIE_CHECKPOINT);
   var painter = new FloatyNotes();
@@ -651,42 +655,35 @@ function initPianoGenie(options) {
     document.querySelector('.splash').hidden = true;
     document.querySelector('.loaded').hidden = false;
     document.addEventListener('keydown', onKeyDown);
-    controls.addEventListener('touchstart', function (event) {
-      return doTouchStart(event);
-    }, {
-      passive: true
-    });
-    controls.addEventListener('touchend', function (event) {
-      return doTouchEnd(event);
-    }, {
-      passive: true
-    });
-    var hasTouchEvents = ('ontouchstart' in window);
 
-    if (!hasTouchEvents) {
-      controls.addEventListener('mousedown', function (event) {
-        return doTouchStart(event);
-      });
-      controls.addEventListener('mouseup', function (event) {
-        return doTouchEnd(event);
-      });
+    var noop = function noop() {};
+
+    var filterActivePointer = function filterActivePointer(cb) {
+      return function (e) {
+        return e.buttons !== 0 ? cb(e) : noop();
+      };
+    };
+
+    var buttons = document.querySelectorAll(".keyboard button.color");
+
+    var _iterator = _createForOfIteratorHelper(buttons),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var button = _step.value;
+        button.addEventListener('pointercancel', doPointerStart);
+        button.addEventListener('pointerdown', doPointerStart);
+        button.addEventListener('pointerup', doPointerEnd);
+        button.addEventListener('pointerover', filterActivePointer(doPointerStart));
+        button.addEventListener('pointerout', filterActivePointer(doPointerEnd));
+      } // Output.
+
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
-
-    controls.addEventListener('mouseover', function (event) {
-      return doTouchMove(event, true);
-    });
-    controls.addEventListener('mouseout', function (event) {
-      return doTouchMove(event, false);
-    });
-    controls.addEventListener('touchenter', function (event) {
-      return doTouchMove(event, true);
-    });
-    controls.addEventListener('touchleave', function (event) {
-      return doTouchMove(event, false);
-    });
-    canvas.addEventListener('mouseenter', function () {
-      return mouseDownButton = null;
-    }); // Output.
 
     radioMidiOutYes.addEventListener('click', function () {
       player.usingMidiOut = true;
@@ -751,37 +748,65 @@ function initPianoGenie(options) {
 
     var note = genie.nextFromKeyWhitelist(0, keyWhitelist, TEMPERATURE);
     genie.resetState();
-  } // Here touch means either touch or mouse.
-
-
-  function doTouchStart(event) {
-    event.preventDefault();
-    mouseDownButton = event.target;
-    buttonDown(event.target.dataset.id, true);
   }
 
-  function doTouchEnd(event) {
+  function preprocessPointerEvent(event) {
     event.preventDefault();
+    var buttonId = event.target.dataset.id;
+    var inputString = "pointer_".concat(event.pointerId);
+    return {
+      buttonId: buttonId,
+      inputString: inputString
+    };
+  } // Here pointer means either touch or mouse.
 
-    if (mouseDownButton && mouseDownButton !== event.target) {
-      buttonUp(mouseDownButton.dataset.id);
+
+  function doPointerStart(event) {
+    doInputStart(preprocessPointerEvent(event));
+  }
+
+  function doPointerEnd(event) {
+    doInputEnd(preprocessPointerEvent(event));
+  }
+
+  function doInputStart(_ref) {
+    var buttonId = _ref.buttonId,
+        inputString = _ref.inputString;
+
+    if (!inputsForButtons.has(buttonId)) {
+      inputsForButtons.set(buttonId, new Set());
     }
 
-    mouseDownButton = null;
-    buttonUp(event.target.dataset.id);
+    var inputsForButton = inputsForButtons.get(buttonId);
+
+    if (inputsForButton.size === 0) {
+      buttonDown(buttonId);
+    }
+
+    inputsForButton.add(inputString);
   }
 
-  function doTouchMove(event, down) {
-    // If we're already holding a button down, start holding this one too.
-    if (!mouseDownButton) return;
-    if (down) buttonDown(event.target.dataset.id, true);else buttonUp(event.target.dataset.id, true);
+  function doInputEnd(_ref2) {
+    var buttonId = _ref2.buttonId,
+        inputString = _ref2.inputString;
+
+    if (!inputsForButtons.has(buttonId)) {
+      inputsForButtons.set(buttonId, new Set());
+    }
+
+    var inputsForButton = inputsForButtons.get(buttonId);
+    inputsForButton["delete"](inputString);
+
+    if (inputsForButton.size === 0) {
+      buttonUp(buttonId);
+    }
   }
   /*************************
    * Button actions
    ************************/
 
 
-  function buttonDown(button, fromKeyDown) {
+  function buttonDown(button) {
     // If we're already holding this button down, nothing new to do.
     if (heldButtonToVisualData.has(button)) {
       return;
@@ -854,7 +879,12 @@ function initPianoGenie(options) {
       var button = getButtonFromKeyCode(event.code);
 
       if (button != null) {
-        buttonDown(button, true);
+        var buttonId = "".concat(button);
+        var inputString = "key_".concat(event.code);
+        doInputStart({
+          buttonId: buttonId,
+          inputString: inputString
+        });
       }
     }
   }
@@ -872,7 +902,12 @@ function initPianoGenie(options) {
       var button = getButtonFromKeyCode(event.code);
 
       if (button != null) {
-        buttonUp(button);
+        var buttonId = "".concat(button);
+        var inputString = "key_".concat(event.code);
+        doInputEnd({
+          buttonId: buttonId,
+          inputString: inputString
+        });
       }
     }
   }
