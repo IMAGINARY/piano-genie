@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "pepjs": "^0.5.3",
-    "qs": "^6.9.4"
+    "qs": "^6.9.7"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
