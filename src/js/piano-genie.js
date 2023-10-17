@@ -1,5 +1,40 @@
 /* globals IMAGINARY */
 
+class PianoGenieWorker {
+  constructor() {
+    this.worker = new Worker('./assets/js/genie-worker.min.js');
+    this.lastTask = Promise.resolve();
+  }
+
+  async processCommand(command, args) {
+    await this.lastTask;
+    this.lastTask = new Promise((resolve, reject) => {
+      this.worker.onmessage = (event) => {
+        const {success, result} = event.data;
+        if (success) {
+          resolve(result);
+        } else {
+            reject(result);
+        }
+      };
+      this.worker.postMessage({command, args});
+    });
+    return this.lastTask;
+  }
+
+    async init() {
+      await this.processCommand('init');
+    }
+
+    async reset() {
+      await this.processCommand('reset');
+    }
+
+    async nextFromKeyList(button, keyWhitelist, temperature) {
+      return await this.processCommand('note', {button, keyWhitelist, temperature});
+    }
+}
+
 export function initPianoGenie(options) {
 
   const CONSTANTS = {
@@ -10,7 +45,6 @@ export function initPianoGenie(options) {
     WHITE_NOTES_PER_OCTAVE : 7,
     LOWEST_PIANO_KEY_MIDI_NOTE : 21,
     NUM_NOTES: 88,
-    GENIE_CHECKPOINT : 'model/genie',
   }
 
   /*************************
@@ -33,6 +67,7 @@ export function initPianoGenie(options) {
       for (let i = 0; i < CONSTANTS.NUM_NOTES; i++) {
         seq.notes.push({pitch: CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + i});
       }
+      console.log(seq.notes);
       this.player.loadSamples(seq);
     }
 
@@ -336,7 +371,7 @@ export function initPianoGenie(options) {
   const inputsForButtons = new Map();
 
   const player = new Player();
-  const genie = new mm.PianoGenie(CONSTANTS.GENIE_CHECKPOINT);
+  const genieWorker = new PianoGenieWorker();
   const painter = new FloatyNotes();
   const piano = new Piano();
   let isUsingMakey = false;
@@ -346,7 +381,7 @@ export function initPianoGenie(options) {
    * Basic UI bits
    ************************/
   function initEverything() {
-    genie.initialize().then(() => {
+    genieWorker.init().then(() => {
       console.log('🧞‍♀️ ready!');
       // playBtn.textContent = 'Play';
       // playBtn.removeAttribute('disabled');
@@ -503,10 +538,6 @@ export function initPianoGenie(options) {
     }
 
     document.addEventListener('keyup', onKeyUp);
-
-    // Slow to start up, so do a fake prediction to warm up the model.
-    const note = genie.nextFromKeyWhitelist(0, keyWhitelist, TEMPERATURE);
-    genie.resetState();
   }
 
   function preprocessPointerEvent(event) {
@@ -552,7 +583,7 @@ export function initPianoGenie(options) {
   /*************************
    * Button actions
    ************************/
-  function buttonDown(button) {
+  async function buttonDown(button) {
     // If we're already holding this button down, nothing new to do.
     if (heldButtonToVisualData.has(button)) {
       return;
@@ -563,7 +594,9 @@ export function initPianoGenie(options) {
       return;
     el.setAttribute('active', true);
 
-    const note = genie.nextFromKeyWhitelist(BUTTON_MAPPING[button], keyWhitelist, TEMPERATURE);
+    // FIXME: The following call turns the method into an asynchronous one such that sometimes,
+    //  the call to buttonUp() will occur before this method returns.
+    const note = await genieWorker.nextFromKeyList(BUTTON_MAPPING[button], keyWhitelist, TEMPERATURE);
     const pitch = CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + note;
 
     // Hear it.
@@ -617,7 +650,7 @@ export function initPianoGenie(options) {
       sustaining = true;
     } else if (event.key === '0' || event.key === 'r') {
       console.log('🧞‍♀️ resetting!');
-      genie.resetState();
+      genieWorker.reset().then();
     } else {
       const button = getButtonFromKeyCode(event.code);
       if (button != null) {
@@ -655,6 +688,7 @@ export function initPianoGenie(options) {
       // Starting 3 semitones up on small screens (on a C), and a whole octave up.
       return i + 3 + CONSTANTS.NOTES_PER_OCTAVE;
     });
+    console.log(keyWhitelist);
 
     piano.resize(totalWhiteNotes);
     painter.resize(piano.config.whiteNoteHeight);

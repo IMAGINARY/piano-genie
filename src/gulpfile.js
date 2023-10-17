@@ -25,9 +25,14 @@ const paths = {
   },
   scripts: {
     src: './js/main.js',
-    watchSrc: ['./js/**/*.js', '!./js/dependencies.js'],
+    watchSrc: ['./js/**/*.js', '!./js/genie-worker.js', '!./js/dependencies.js'],
     dest: `${OUTPUT_DIR}/assets/js`,
     filename: 'bundle',
+  },
+  genieWorker: {
+    src: './js/genie-worker.js',
+    dest: `${OUTPUT_DIR}/assets/js`,
+    filename: 'genie-worker',
   },
   dependencies: {
     src: './js/dependencies.js',
@@ -79,6 +84,10 @@ function es(entrypoint, outputName) {
     .pipe(gulp.dest(paths.scripts.dest));
 }
 
+function genieWorker() {
+  return es(paths.genieWorker.src, paths.genieWorker.filename);
+}
+
 function dependencies() {
   return es(paths.dependencies.src, paths.dependencies.filename);
 }
@@ -90,6 +99,7 @@ function scripts() {
 function watch() {
   gulp.watch(paths.html.watchSrc || paths.html.src, html);
   gulp.watch(paths.styles.watchSrc || paths.styles.src, styles);
+  gulp.watch(paths.genieWorker.watchSrc || paths.genieWorker.src, genieWorker);
   gulp.watch(paths.dependencies.watchSrc || paths.dependencies.src, dependencies);
   gulp.watch(paths.scripts.watchSrc || paths.scripts.src, scripts);
 }
@@ -99,6 +109,7 @@ const build = gulp.parallel(html, styles, scripts, dependencies);
 exports.html = html;
 exports.styles = styles;
 exports.dependencies = dependencies;
+exports.genieWorker = genieWorker;
 exports.scripts = scripts;
 exports.watch = watch;
 
