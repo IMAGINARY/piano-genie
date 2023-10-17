@@ -397,6 +397,12 @@ export function initPianoGenie(options) {
     document.addEventListener('keydown',onKeyDown);
 
     const eventListenerOptions = {passive: false};
+    const preventDefault = (e) => e.preventDefault();
+
+    // Prevent the context menu where possible.
+    const canvas = document.getElementById('canvas');
+    canvas.addEventListener('contextmenu', preventDefault, eventListenerOptions);
+    window.addEventListener('contextmenu', preventDefault, eventListenerOptions);
 
     // Allow the user to press anywhere to start, not just on the buttons.
     // (Implicit pointer capture on touch devices would prevent this.)
@@ -420,6 +426,9 @@ export function initPianoGenie(options) {
     const ignoreHover = (cb) => e => e.buttons !== 0 ? cb(e) : noop();
     const buttons = document.querySelectorAll(".keyboard button.color");
     for(const button of buttons) {
+      // Prevent accidental section of elements and texts.
+      button.addEventListener('pointerdown', preventDefault, eventListenerOptions);
+
       // Browsers that support direct manipulation (e.g. most browser on mobile devices)
       // trigger implicit pointer capture on a `pointerdown` event. This prevents
       // `pointerover` and `pointerout` from firing, so we need to manually release the
