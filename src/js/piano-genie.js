@@ -1,3 +1,5 @@
+import {PianoGenieAsync} from "./piano-genia-async";
+
 /* globals IMAGINARY */
 
 export function initPianoGenie(options) {
@@ -18,7 +20,7 @@ export function initPianoGenie(options) {
    ************************/
   class Player {
     constructor() {
-      this.player = new mm.SoundFontPlayer('vendor/sgm_plus');
+      this.player = new core.SoundFontPlayer('vendor/sgm_plus');
       this.midiOut = [];
       this.midiIn = []
       this.usingMidiOut = false;
@@ -41,7 +43,7 @@ export function initPianoGenie(options) {
       if (this.usingMidiOut) {
         this.sendMidiNoteOn(pitch, button);
       } else {
-        mm.Player.tone.context.resume();
+        core.Player.tone.context.resume();
         this.player.playNoteDown({pitch:pitch});
       }
     }
@@ -336,7 +338,7 @@ export function initPianoGenie(options) {
   const inputsForButtons = new Map();
 
   const player = new Player();
-  const genie = new mm.PianoGenie(CONSTANTS.GENIE_CHECKPOINT);
+  const genie = new PianoGenieAsync(CONSTANTS.GENIE_CHECKPOINT);
   const painter = new FloatyNotes();
   const piano = new Piano();
   let isUsingMakey = false;
