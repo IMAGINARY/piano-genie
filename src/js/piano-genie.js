@@ -554,7 +554,7 @@ export function initPianoGenie(options) {
   /*************************
    * Button actions
    ************************/
-  function buttonDown(button) {
+  async function buttonDown(button) {
     // If we're already holding this button down, nothing new to do.
     if (heldButtonToVisualData.has(button)) {
       return;
@@ -565,7 +565,7 @@ export function initPianoGenie(options) {
       return;
     el.setAttribute('active', true);
 
-    const note = genie.nextFromKeyWhitelist(BUTTON_MAPPING[button], keyWhitelist, TEMPERATURE);
+    const note = await genie.nextFromKeyListAsync(BUTTON_MAPPING[button], keyWhitelist, TEMPERATURE);
     const pitch = CONSTANTS.LOWEST_PIANO_KEY_MIDI_NOTE + note;
 
     // Hear it.

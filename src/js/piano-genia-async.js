@@ -54,6 +54,7 @@ function sampleLogits(
 export class PianoGenieAsync extends piano_genie.PianoGenie {
     constructor(url) {
         super(url);
+        this.lastInferencePromise = Promise.resolve();
     }
 
     /**
@@ -66,11 +67,11 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
      * @param temperature Temperature. From 0 to 1, goes from argmax to random.
      * @param seed Random seed. Use a fixed number to get reproducible output.
      */
-    next(button, temperature, seed) {
+    async nextAsync(button, temperature, seed) {
         const sampleFunc = (logits) => {
             return sampleLogits(logits, temperature, seed);
         };
-        return this.nextWithCustomSamplingFunction(button, sampleFunc);
+        return await this.nextWithCustomSamplingFunctionAsync(button, sampleFunc);
     }
 
     /**
@@ -86,7 +87,7 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
      * @param temperature Temperature. From 0 to 1, goes from argmax to random.
      * @param seed Random seed. Use a fixed number to get reproducible output.
      */
-    nextFromKeyList(
+    async nextFromKeyListAsync(
         button,
         keyList,
         temperature,
@@ -102,14 +103,14 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
             result = tf.reshape(result1d, []);
             return result;
         };
-        return this.nextWithCustomSamplingFunction(button, sampleFunc);
+        return await this.nextWithCustomSamplingFunctionAsync(button, sampleFunc);
     }
 
     /**
      * @deprecated
      * Alias for nextFromKeyList() to maintain backwards compatibility.
      */
-    nextFromKeyWhitelist(button,
+    async nextFromKeyWhitelistAsync(button,
                          keyList,
                          temperature,
                          seed) {
@@ -118,7 +119,7 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
              version. Please use nextFromKeyList() instead',
             'PianoGenie', logging.Level.WARN);
 
-        return this.nextFromKeyList(button, keyList, temperature, seed);
+        return await this.nextFromKeyListAsync(button, keyList, temperature, seed);
     }
     /**
      * Given a button number, evaluates Piano Genie to produce unnormalized logits
@@ -130,21 +131,24 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
      * (tf.Tensor1D of size 88) to an integer (tf.Scalar) representing one of
      * them (e.g. 60).
      */
-    nextWithCustomSamplingFunction(
+    async nextWithCustomSamplingFunctionAsync(
         button,
         sampleFunc) {
-        const lastState = this.lastState;
-        this.button = button;
+        this.lastInferencePromise = this.lastInferencePromise.then(async () => {
+            const lastState = this.lastState;
+            this.button = button;
 
-        const rnnInput = this.getRnnInputFeats();
-        const [state, output] = this.evaluateModelAndSample(
-            rnnInput, lastState, sampleFunc);
-        rnnInput.dispose();
+            const rnnInput = this.getRnnInputFeats();
+            const [state, output] = await this.evaluateModelAndSampleAsync(
+                rnnInput, lastState, sampleFunc);
+            rnnInput.dispose();
 
-        disposeState(this.lastState);
-        this.lastState = state;
+            disposeState(this.lastState);
+            this.lastState = state;
 
-        return output;
+            return output;
+        });
+        return await this.lastInferencePromise;
     }
 
     /**
@@ -157,17 +161,10 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
      * (tf.Tensor1D of size 88) to an integer (tf.Scalar) representing one of
      * them (e.g. 60).
      */
-    evaluateModelAndSample(
+    async evaluateModelAndSampleAsync(
         rnnInput1d,
         initialState,
         sampleFunc) {
-        // TODO(chrisdonahue): Make this function asynchronous.
-        // This function is (currently) synchronous, blocking other execution
-        // to provide mutual exclusion. This is a workaround for race conditions
-        // where the LSTM state is not updated from the current call before it is
-        // needed in subsequent calls. More research is required to figure out an
-        // adequate asynchronous solution.
-
         // Ensure that the model is initialized.
         if (!this.initialized) {
             // This should be an error in real-time context because the model isn't
@@ -176,7 +173,7 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
         }
 
         // Compute logits and sample.
-        const [finalState, output] = tf.tidy(() => {
+        const [finalState, sample] = tf.tidy(() => {
             // Project feats array through RNN input matrix.
             let rnnInput = tf.matMul(
                 tf.expandDims(rnnInput1d, 0),
@@ -207,10 +204,11 @@ export class PianoGenieAsync extends piano_genie.PianoGenie {
 
             // Sample from logits.
             const sample = sampleFunc(logits1D);
-            const output = sample.dataSync()[0];
 
-            return [finalState, output];
+            return [finalState, sample];
         });
+
+        const output = (await sample.data())[0];
 
         return [finalState, output];
     }
