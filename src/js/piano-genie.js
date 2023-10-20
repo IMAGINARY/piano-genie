@@ -396,15 +396,51 @@ export function initPianoGenie(options) {
 
     document.addEventListener('keydown',onKeyDown);
 
+    const eventListenerOptions = {passive: false};
+    const preventDefault = (e) => e.preventDefault();
+
+    // Prevent the context menu where possible.
+    const canvas = document.getElementById('canvas');
+    canvas.addEventListener('contextmenu', preventDefault, eventListenerOptions);
+    window.addEventListener('contextmenu', preventDefault, eventListenerOptions);
+
+    // Allow the user to press anywhere to start, not just on the buttons.
+    // (Implicit pointer capture on touch devices would prevent this.)
+    window.addEventListener('pointerdown', (e) => e.target.releasePointerCapture(e.pointerId));
+
+    // Clean up pointers that don't end on the button bar.
+    const releasePointer = (event) => {
+      const inputString = `pointer_${event.pointerId}`;
+      for( let i = 0; i < NUM_BUTTONS; i+= 1) {
+        doInputEnd({buttonId: `${i}`, inputString});
+      }
+    }
+    window.addEventListener('pointercancel', releasePointer, eventListenerOptions);
+    window.addEventListener('pointerup', releasePointer, eventListenerOptions);
+
+    const releasePointerCapture = (event) => {
+      event.target.releasePointerCapture(event.pointerId);
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    };
     const noop = () => {};
-    const filterActivePointer = (cb) => e => e.buttons !== 0 ? cb(e) : noop();
+    const ignoreHover = (cb) => e => e.buttons !== 0 ? cb(e) : noop();
     const buttons = document.querySelectorAll(".keyboard button.color");
     for(const button of buttons) {
-      button.addEventListener('pointercancel', doPointerStart);
-      button.addEventListener('pointerdown', doPointerStart);
-      button.addEventListener('pointerup', doPointerEnd);
-      button.addEventListener('pointerover', filterActivePointer(doPointerStart));
-      button.addEventListener('pointerout', filterActivePointer(doPointerEnd));
+      // Prevent accidental section of elements and texts.
+      button.addEventListener('pointerdown', preventDefault, eventListenerOptions);
+
+      // Browsers that support direct manipulation (e.g. most browser on mobile devices)
+      // trigger implicit pointer capture on a `pointerdown` event. This prevents
+      // `pointerover` and `pointerout` from firing, so we need to manually release the
+      // pointer capture on `pointerdown`.
+      button.addEventListener('pointerdown', releasePointerCapture, eventListenerOptions);
+
+      // Manage pointer lifecycle for each button.
+      button.addEventListener('pointercancel', releasePointer, eventListenerOptions);
+      button.addEventListener('pointerdown', doPointerStart, eventListenerOptions);
+      button.addEventListener('pointerup', releasePointer, eventListenerOptions);
+      button.addEventListener('pointerover', ignoreHover(doPointerStart), eventListenerOptions);
+      button.addEventListener('pointerout', doPointerEnd, eventListenerOptions);
     }
 
     // Output.
@@ -474,8 +510,9 @@ export function initPianoGenie(options) {
   }
 
   function preprocessPointerEvent(event) {
-    event.preventDefault();
-    const buttonId = event.target.dataset.id;
+    // We want the element to which the event handler has been attached,
+    // so we use `currentTarget` instead of `target`.
+    const buttonId = event.currentTarget.dataset.id;
     const inputString = `pointer_${event.pointerId}`;
     return {buttonId, inputString};
   }
@@ -504,8 +541,10 @@ export function initPianoGenie(options) {
       inputsForButtons.set(buttonId, new Set());
     }
     const inputsForButton = inputsForButtons.get(buttonId);
+    const wasHolding = inputsForButton.has(inputString);
     inputsForButton.delete(inputString)
-    if(inputsForButton.size === 0) {
+    // Only release button if it hasn't already been released before.
+    if(wasHolding && inputsForButton.size === 0) {
       buttonUp(buttonId);
     }
   }
